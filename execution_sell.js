@@ -1,4 +1,4 @@
-const cache = require('./cache');
+import cache from './cache.js';
 
 const sellExecution = async (
   stockPrice,
@@ -99,4 +99,4 @@ const sellExecution = async (
   }
 };
 
-module.exports = sellExecution;
+export default sellExecution;

@@ -1,12 +1,12 @@
-const { Kafka } = require('kafkajs');
+import { Kafka } from 'kafkajs';
 
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
 const topic = 'message-log';
 const kafka = new Kafka({ clientId, brokers });
 
-const buyExecution = require('./execution_buy');
-const sellExecution = require('./execution_sell');
+import buyExecution from './execution_buy.js';
+import sellExecution from './execution_sell.js';
 
 // create a new consumer from the kafka client, and set its group ID
 const consumer = kafka.consumer({ groupId: clientId, maxInFlightRequests: 1 });

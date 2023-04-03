@@ -1,5 +1,5 @@
-const Redis = require('ioredis');
-const redis = new Redis({
+import Redis from 'ioredis';
+const cache = new Redis({
   port: process.env.REDIS_PORT, // Redis port
   host: process.env.REDIS_HOST, // Redis host
   username: process.env.REDIS_USERNAME, // needs Redis >= 6
@@ -12,4 +12,4 @@ const redis = new Redis({
   },
 });
 
-module.exports = redis;
+export default cache;
