@@ -1,19 +1,16 @@
 const { Kafka } = require('kafkajs');
 
 const clientId = 'my-app';
-
 const brokers = ['localhost:9092'];
-
 const topic = 'message-log';
-
 const kafka = new Kafka({ clientId, brokers });
 const producer = kafka.producer();
 
 const sellOrders = [
-  // [102, 10],
-  // [101, 7],
-  // [100, 10],
-  [98, 15],
+  [102, 10],
+  [101, 7],
+  [100, 10],
+  [98, 20],
 ];
 
 const produce = async () => {
@@ -29,8 +26,6 @@ const produce = async () => {
         stockAmount: `sell:${randomStockAmount}:orderId-${i}`,
         stockPriceOrder: `${randomStockPrice}${Date.now() - 1000000000000}`,
       };
-
-      console.log(Date.now() - 1000000000000);
 
       await producer.send({
         topic,

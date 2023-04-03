@@ -1,11 +1,8 @@
 const { Kafka } = require('kafkajs');
 
 const clientId = 'my-app';
-
 const brokers = ['localhost:9092'];
-
 const topic = 'message-log';
-
 const kafka = new Kafka({ clientId, brokers });
 const producer = kafka.producer();
 const time = 2208960000000; // 2040-01-01 00:00:00
@@ -30,8 +27,6 @@ const produce = async () => {
         stockAmount: `buy:${randomStockAmount}:orderId-${i}`,
         stockPriceOrder: `${randomStockPrice}${time - Date.now()}`,
       };
-
-      console.log(time - Date.now());
 
       await producer.send({
         topic,
