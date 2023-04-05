@@ -1,6 +1,7 @@
 sell,105,10
 buy,99,10
 sell,104,5
+sell,104,10
 buy,98,7
 sell,103,10
 buy,97,10

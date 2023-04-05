@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { Kafka } from 'kafkajs';
 import { promisify } from 'util';
+import { v1 as uuidv1 } from 'uuid';
 
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
@@ -11,9 +12,11 @@ const time = 2208960000000; // 2040-01-01 00:00:00
 
 let orders;
 
-await promisify(fs.readFile)('testcase.txt', 'utf8').then((data) => {
-  orders = data.split('\n');
-});
+await promisify(fs.readFile)('matching_machine/testcase.txt', 'utf8').then(
+  (data) => {
+    orders = data.split('\n');
+  }
+);
 
 const produce = async () => {
   await producer.connect();
@@ -23,9 +26,11 @@ const produce = async () => {
       const randomStockAmount = orders[i].split(',')[2];
       const randomStockPrice = orders[i].split(',')[1];
 
+      const orderId = uuidv1();
+
       if (orders[i].split(',')[0] === 'buy') {
         const data = {
-          stockAmount: `buy:${randomStockAmount}:orderId-${i}`,
+          stockAmount: `buy:${randomStockAmount}:${orderId}`,
           stockPriceOrder: `${randomStockPrice}${time - Date.now()}`,
         };
 
@@ -41,14 +46,14 @@ const produce = async () => {
 
         console.log(
           'writes: ',
-          `buy:${randomStockAmount}:orderId-${i}`,
+          `buy:${randomStockAmount}:${orderId}`,
           randomStockPrice
         );
       }
 
       if (orders[i].split(',')[0] === 'sell') {
         const data = {
-          stockAmount: `sell:${randomStockAmount}:orderId-${i}`,
+          stockAmount: `sell:${randomStockAmount}:${orderId}`,
           stockPriceOrder: `${randomStockPrice}${Date.now() - 1000000000000}`,
         };
 
@@ -65,7 +70,7 @@ const produce = async () => {
         // if the message is written successfully, log it and increment `i`
         console.log(
           'writes: ',
-          `sell:${randomStockAmount}:orderId-${i}`,
+          `sell:${randomStockAmount}:${orderId}`,
           randomStockPrice
         );
       }
