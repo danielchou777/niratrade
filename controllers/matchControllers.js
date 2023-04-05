@@ -1,4 +1,6 @@
 import net from 'net';
+import { StatusCodes } from 'http-status-codes';
+import { getSocketServer } from '../utils/socket.js';
 
 export const order = (req, res) => {
   const client = net.connect({ port: 8124 }, function () {
@@ -15,11 +17,12 @@ export const order = (req, res) => {
 
   // data event： 到收到資料傳輸時觸發事件 ， argument 為對象傳輸的物件
   client.on('data', function (data) {
-    console.log('client端：收到 server端 傳輸資料為 ' + data.toString());
-
     //結束 client 端 連線
     client.end();
 
-    res.send(`client端：收到 server端 傳輸資料為 ${data.toString()}`);
+    const io = getSocketServer();
+    io.emit('order', data.toString());
+
+    res.status(StatusCodes.OK).json({ msg: `${data.toString()}` });
   });
 };
