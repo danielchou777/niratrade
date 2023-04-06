@@ -79,12 +79,12 @@ const Subtotal = styled.div`
 function OrderBooks(props) {
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
-  const [orderCount, setOrderCount] = React.useState(0);
   const { socket } = props;
 
   React.useEffect(() => {
-    socket.on('order', (data) => {
-      setOrderCount((count) => count + 1);
+    socket.on('orderBook', (data) => {
+      setBuyOrderBook(data.buyOrderBook);
+      setSellOrderBook(data.sellOrderBook);
     });
   }, [socket]);
 
@@ -94,7 +94,7 @@ function OrderBooks(props) {
       setBuyOrderBook(buyOrderBook);
       setSellOrderBook(sellOrderBook);
     })();
-  }, [orderCount]);
+  }, []);
 
   const getTotal = (orders) =>
     orders.reduce((total, order) => total + parseFloat(order[1]), 0);

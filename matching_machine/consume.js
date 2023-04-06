@@ -5,6 +5,10 @@ const brokers = ['localhost:9092'];
 const topic = 'message-log';
 const kafka = new Kafka({ clientId, brokers });
 
+import socketIOClient from 'socket.io-client';
+const ENDPOINT = 'http://localhost:3000';
+const socketio = socketIOClient(ENDPOINT);
+
 import buyExecution from './execution_buy.js';
 import sellExecution from './execution_sell.js';
 
@@ -65,6 +69,8 @@ const consume = async () => {
       await consumer.commitOffsets([
         { topic, partition, offset: message.offset },
       ]);
+
+      socketio.emit('execution', 'success');
     },
   });
 };
