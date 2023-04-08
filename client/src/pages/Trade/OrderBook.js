@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import api from '../../utils/api';
 
 const OrderBookWrapper = styled.div`
-  width: 50%;
+  width: 100%;
+  height: 100%;
   padding: 1rem;
   display: flex;
   flex-direction: row;
@@ -34,15 +35,15 @@ const OrderPrice = styled.div`
 `;
 
 const OrderQty = styled.div`
-  color: white;
-  color: white;
+  text-align: right;
+  color: #bdbcb9;
   width: 100px;
 `;
 
 const OrderBookHeader = styled.div`
   width: 100%;
   margin-bottom: 1rem;
-  color: white;
+  color: #bdbcb9;
   font-weight: bold;
   display: flex;
   flex-direction: row;
@@ -56,19 +57,20 @@ const Total = styled.div`
 `;
 
 const SubTotal = styled.div`
-  color: white;
-  color: white;
+  text-align: right;
+  color: #bdbcb9;
   width: 100px;
 `;
 
 const Price = styled.div`
   text-align: right;
-  color: white;
+  color: #bdbcb9;
   width: 100px;
 `;
 
 const Amount = styled.div`
-  color: white;
+  text-align: right;
+  color: #bdbcb9;
   width: 100px;
 `;
 const Subtotal = styled.div`
@@ -79,7 +81,12 @@ const Subtotal = styled.div`
 function OrderBooks(props) {
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
+
   const { socket } = props;
+
+  const thousandSeparator = (num) => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
 
   React.useEffect(() => {
     socket.on('orderBook', (data) => {
@@ -111,9 +118,13 @@ function OrderBooks(props) {
           <>
             {buyOrderBook.map((order) => (
               <OrderWrapper key={order[0]}>
-                <OrderPrice type='buy'>{order[0]}</OrderPrice>
-                <OrderQty>{order[1]}</OrderQty>
-                <SubTotal>{Number(order[0]) * Number(order[1])}</SubTotal>
+                <OrderPrice type='buy'>
+                  {thousandSeparator(order[0])}
+                </OrderPrice>
+                <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                <SubTotal>
+                  {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                </SubTotal>
               </OrderWrapper>
             ))}
             {/* <Total>Buy: {getTotal(buyOrderBook)}</Total> */}
@@ -130,9 +141,13 @@ function OrderBooks(props) {
           <>
             {sellOrderBook.map((order) => (
               <OrderWrapper key={order[0]}>
-                <OrderPrice type='sell'>{order[0]}</OrderPrice>
-                <OrderQty>{order[1]}</OrderQty>
-                <SubTotal>{Number(order[0]) * Number(order[1])}</SubTotal>
+                <OrderPrice type='sell'>
+                  {thousandSeparator(order[0])}
+                </OrderPrice>
+                <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                <SubTotal>
+                  {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                </SubTotal>
               </OrderWrapper>
             ))}
             {/* <Total>Sell: {getTotal(sellOrderBook)}</Total> */}

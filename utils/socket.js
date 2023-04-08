@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import {
   getBuyOrderBook,
   getSellOrderBook,
+  getExecutions,
 } from '../models/marketdataModels.js';
 
 let io;
@@ -19,10 +20,12 @@ export const createSocketServer = (server) => {
     console.log('a user connected');
 
     socket.on('execution', async (data) => {
-      console.log(data);
       const buyOrderBook = await getBuyOrderBook();
       const sellOrderBook = await getSellOrderBook();
+      const executions = await getExecutions();
       io.emit('orderBook', { buyOrderBook, sellOrderBook });
+
+      io.emit('marketTrade', { executions });
     });
 
     socket.on('disconnect', () => {

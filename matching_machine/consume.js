@@ -1,10 +1,11 @@
+// kafka
 import { Kafka } from 'kafkajs';
-
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
 const topic = 'message-log';
 const kafka = new Kafka({ clientId, brokers });
 
+// socket.io
 import socketIOClient from 'socket.io-client';
 const ENDPOINT = 'http://localhost:3000';
 const socketio = socketIOClient(ENDPOINT);
@@ -12,11 +13,12 @@ const socketio = socketIOClient(ENDPOINT);
 import buyExecution from './execution_buy.js';
 import sellExecution from './execution_sell.js';
 
+import cache from '../utils/cache.js';
+
 // create a new consumer from the kafka client, and set its group ID
 const consumer = kafka.consumer({ groupId: clientId, maxInFlightRequests: 1 });
-const executions = [];
 
-function pushExecutions(
+async function pushExecutions(
   orderType,
   executedBuyOrderId,
   executedSellOrderId,
@@ -24,14 +26,20 @@ function pushExecutions(
   amount,
   time
 ) {
-  executions.push({
-    orderType,
-    executedBuyOrderId,
-    executedSellOrderId,
-    stockPrice,
-    amount,
-    time,
-  });
+  await cache.lpush(
+    'executions',
+    JSON.stringify({
+      orderType,
+      stockPrice,
+      amount,
+      time,
+    })
+  );
+
+  const executionsLenth = await cache.llen('executions');
+  if (executionsLenth > 30) {
+    await cache.ltrim('executions', 0, 29);
+  }
 }
 
 const consume = async () => {
@@ -62,8 +70,6 @@ const consume = async () => {
           pushExecutions
         );
       }
-
-      console.log(executions);
 
       // Commit the offset for the processed message
       await consumer.commitOffsets([
