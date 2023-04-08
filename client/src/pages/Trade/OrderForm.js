@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const FormGroup = styled.div`
-  width: 50%;
+  width: 100%;
   display: flex;
   padding: 1rem;
   flex-direction: column;

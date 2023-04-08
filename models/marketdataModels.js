@@ -65,3 +65,13 @@ export const getSellOrderBook = async (req, res) => {
 
   return result;
 };
+
+export const getExecutions = async (req, res) => {
+  let executions = await cache.lrange('executions', 0, -1);
+
+  executions = executions.map((execution) => {
+    return JSON.parse(execution);
+  });
+
+  return executions;
+};

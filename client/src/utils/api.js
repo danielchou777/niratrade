@@ -16,6 +16,11 @@ const api = {
     const response = await fetch(`${api.hostname}/marketdata/orderBook`);
     return await response.json();
   },
+
+  async getExecutions() {
+    const response = await fetch(`${api.hostname}/marketdata/executions`);
+    return await response.json();
+  },
 };
 
 export default api;
