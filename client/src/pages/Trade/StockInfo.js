@@ -12,14 +12,18 @@ const Wrapper = styled.div`
 `;
 
 const StockName = styled.div`
-  font-size: 1.2rem;
+  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600&display=swap');
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  color: #d5d4cf;
+  font-size: 1.5rem;
   text-align: left;
   display: flex;
-  margin-right: 1rem;
+  margin-right: 1.5rem;
 `;
 
 const StockPrice = styled.div`
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   display: flex;
   font-weight: bold;
   text-align: left;

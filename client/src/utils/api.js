@@ -21,6 +21,17 @@ const api = {
     const response = await fetch(`${api.hostname}/marketdata/executions`);
     return await response.json();
   },
+
+  async getWallet(userId) {
+    const response = await fetch(`${api.hostname}/userdata/wallet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return await response.json();
+  },
 };
 
 export default api;

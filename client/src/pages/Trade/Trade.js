@@ -5,6 +5,7 @@ import OrderForm from './OrderForm';
 import OrderBooks from './OrderBook';
 import MarketTrades from './MarketTrades';
 import StockInfo from './StockInfo';
+import UserWallet from './UserWallet';
 
 import socketIOClient from 'socket.io-client';
 const ENDPOINT = 'http://127.0.0.1:3000';
@@ -48,6 +49,7 @@ function Trade() {
 
   return (
     <Wrapper>
+      <UserWallet />
       <StockInfo stockInfo={stockInfo} />
       <OrderWrapper>
         <OrderForm onSubmit={api.sendOrder} socket={socket} />
