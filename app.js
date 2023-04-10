@@ -7,6 +7,7 @@ const app = express();
 // routes
 import matchRouter from './router/matchRoutes.js';
 import marketdataRouter from './router/marketdataRoutes.js';
+import userdataRouter from './router/userdataRoutes.js';
 
 // middleware
 import notFound from './middleware/notFound.js';
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/1.0/match', matchRouter);
 app.use('/api/1.0/marketdata', marketdataRouter);
+app.use('/api/1.0/userdata', userdataRouter);
 
 app.use(notFound);
 app.use(errorHandler);
