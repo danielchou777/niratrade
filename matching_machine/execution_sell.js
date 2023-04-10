@@ -1,4 +1,5 @@
 import cache from '../utils/cache.js';
+import { updateOrder } from '../models/orderManagerModels.js';
 
 const sellExecution = async (
   stockPrice,
@@ -49,6 +50,16 @@ const sellExecution = async (
 
       cache.zrem('buyOrderBook', buyOrder[0]);
 
+      // update buy order status to partially filled
+      updateOrder(
+        buyOrderId,
+        'partially filled',
+        buyOrderAmount - sellOrderAmount
+      );
+
+      // update sell order status to filled
+      updateOrder(stockAmount.split(':')[2], 'filled', 0);
+
       pushExecutions(
         'sell',
         buyOrderId,
@@ -66,6 +77,12 @@ const sellExecution = async (
     if (buyOrderAmount == sellOrderAmount) {
       cache.zrem(`buyOrderBook`, buyOrder[0]);
 
+      // update buy order status to filled
+      updateOrder(buyOrderId, 'filled', 0);
+
+      // update sell order status to filled
+      updateOrder(stockAmount.split(':')[2], 'filled', 0);
+
       pushExecutions(
         'sell',
         buyOrderId,
@@ -82,6 +99,16 @@ const sellExecution = async (
     // if buy order amount is less than sell order amount, remove from buy order book and continue
     if (buyOrderAmount < sellOrderAmount) {
       cache.zrem(`buyOrderBook`, buyOrder[0]);
+
+      // update buy order status to filled
+      updateOrder(buyOrderId, 'filled', 0);
+
+      // update sell order status to partially filled
+      updateOrder(
+        stockAmount.split(':')[2],
+        'partially filled',
+        sellOrderAmount - buyOrderAmount
+      );
 
       pushExecutions(
         'sell',

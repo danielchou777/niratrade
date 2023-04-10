@@ -1,4 +1,5 @@
 import cache from '../utils/cache.js';
+import { updateOrder } from '../models/orderManagerModels.js';
 
 const buyExecution = async (
   stockPrice,
@@ -40,7 +41,7 @@ const buyExecution = async (
 
     let sellOrderId = sellOrder[0].split(':')[2];
 
-    // if buy order amount is greater than sell order amount, update buy order book and break
+    // if sell order amount is greater than buy order amount, update sell order book and break
     if (sellOrderAmount > buyOrderAmount) {
       cache.zadd(`sellOrderBook`, [
         sellOrder[1],
@@ -49,6 +50,16 @@ const buyExecution = async (
 
       cache.zrem('sellOrderBook', sellOrder[0]);
 
+      // update sell order status to partially filled
+      updateOrder(
+        sellOrderId,
+        'partially filled',
+        sellOrderAmount - buyOrderAmount
+      );
+
+      // update buy order status to filled
+      updateOrder(stockAmount.split(':')[2], 'filled', 0);
+
       pushExecutions(
         'buy',
         stockAmount.split(':')[2],
@@ -62,10 +73,16 @@ const buyExecution = async (
       break;
     }
 
-    // if buy order amount is equal to sell order amount, remove from buy order book and break
+    // if sell order amount is equal to buy order amount, remove from sell order book and break
     if (sellOrderAmount == buyOrderAmount) {
       cache.zrem(`sellOrderBook`, sellOrder[0]);
 
+      // update sell order status to filled
+      updateOrder(sellOrderId, 'filled', 0);
+
+      // update buy order status to filled
+      updateOrder(stockAmount.split(':')[2], 'filled', 0);
+
       pushExecutions(
         'buy',
         stockAmount.split(':')[2],
@@ -79,9 +96,19 @@ const buyExecution = async (
       break;
     }
 
-    // if buy order amount is less than sell order amount, remove from buy order book and continue
+    // if sell order amount is less than buy order amount, remove from sell order book and continue
     if (sellOrderAmount < buyOrderAmount) {
       cache.zrem(`sellOrderBook`, sellOrder[0]);
+
+      // update sell order status to filled
+      updateOrder(sellOrderId, 'filled', 0);
+
+      // update buy order status to partially filled
+      updateOrder(
+        stockAmount.split(':')[2],
+        'partially filled',
+        buyOrderAmount - sellOrderAmount
+      );
 
       pushExecutions(
         'buy',
