@@ -140,11 +140,29 @@ function OrderForm({ onSubmit, socket }) {
     let order;
 
     if (type === 'buy' && buyQuantity && buyPrice) {
-      order = { quantity: buyQuantity, price: buyPrice, orderType: type };
+      order = {
+        symbol: 'DAN',
+        userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
+        price: buyPrice,
+        quantity: buyQuantity,
+        type: 'limit',
+        side: 'buy',
+        status: 'open',
+        partiallyFilled: buyQuantity,
+      };
     }
 
     if (type === 'sell' && sellQuantity && sellPrice) {
-      order = { quantity: sellQuantity, price: sellPrice, orderType: type };
+      order = {
+        symbol: 'DAN',
+        userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
+        price: sellPrice,
+        quantity: sellQuantity,
+        type: 'limit',
+        side: 'sell',
+        status: 'open',
+        partiallyFilled: sellQuantity,
+      };
     }
 
     if (order) {
