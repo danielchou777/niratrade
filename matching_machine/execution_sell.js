@@ -1,5 +1,24 @@
 import cache from '../utils/cache.js';
-import { updateOrder } from '../models/orderManagerModels.js';
+import {
+  updateOrder,
+  updateUserStock,
+  updateUserBalance,
+} from '../models/orderManagerModels.js';
+
+const updateUserTables = async (
+  buyUserId,
+  sellUserId,
+  symbol,
+  sellOrderAmount,
+  buyOrderPrice
+) => {
+  await Promise.all([
+    updateUserBalance(sellUserId, buyOrderPrice * sellOrderAmount),
+    updateUserStock(sellUserId, symbol, -sellOrderAmount),
+    updateUserBalance(buyUserId, -buyOrderPrice * sellOrderAmount),
+    updateUserStock(buyUserId, symbol, sellOrderAmount),
+  ]);
+};
 
 const sellExecution = async (
   stockPrice,
@@ -37,15 +56,22 @@ const sellExecution = async (
     }
 
     let buyOrderAmount = Number(buyOrder[0].split(':')[1]);
-    let sellOrderAmount = Number(stockAmount.split(':')[1]);
-
     let buyOrderId = buyOrder[0].split(':')[2];
+    let buyUserId = buyOrder[0].split(':')[3];
+
+    let sellOrderAmount = Number(stockAmount.split(':')[1]);
+    let sellOrderId = stockAmount.split(':')[2];
+    let sellUserId = stockAmount.split(':')[3];
+
+    let symbol = stockAmount.split(':')[4];
 
     // if buy order amount is greater than sell order amount, update buy order book and break
     if (buyOrderAmount > sellOrderAmount) {
       cache.zadd(`buyOrderBook`, [
         buyOrder[1],
-        `buy:${buyOrderAmount - sellOrderAmount}:${buyOrderId}`,
+        `buy:${
+          buyOrderAmount - sellOrderAmount
+        }:${buyOrderId}:${buyUserId}:${symbol}`,
       ]);
 
       cache.zrem('buyOrderBook', buyOrder[0]);
@@ -58,12 +84,20 @@ const sellExecution = async (
       );
 
       // update sell order status to filled
-      updateOrder(stockAmount.split(':')[2], 'filled', 0);
+      updateOrder(sellOrderId, 'filled', 0);
+
+      await updateUserTables(
+        buyUserId,
+        sellUserId,
+        symbol,
+        sellOrderAmount,
+        buyOrderPrice
+      );
 
       pushExecutions(
         'sell',
         buyOrderId,
-        stockAmount.split(':')[2],
+        sellOrderId,
         buyOrderPrice,
         sellOrderAmount,
         Date.now()
@@ -81,12 +115,20 @@ const sellExecution = async (
       updateOrder(buyOrderId, 'filled', 0);
 
       // update sell order status to filled
-      updateOrder(stockAmount.split(':')[2], 'filled', 0);
+      updateOrder(sellOrderId, 'filled', 0);
+
+      await updateUserTables(
+        buyUserId,
+        sellUserId,
+        symbol,
+        sellOrderAmount,
+        buyOrderPrice
+      );
 
       pushExecutions(
         'sell',
         buyOrderId,
-        stockAmount.split(':')[2],
+        sellOrderId,
         buyOrderPrice,
         sellOrderAmount,
         Date.now()
@@ -100,28 +142,33 @@ const sellExecution = async (
     if (buyOrderAmount < sellOrderAmount) {
       cache.zrem(`buyOrderBook`, buyOrder[0]);
 
+      // update sell order amount
+      sellOrderAmount -= buyOrderAmount;
+
       // update buy order status to filled
       updateOrder(buyOrderId, 'filled', 0);
 
       // update sell order status to partially filled
-      updateOrder(
-        stockAmount.split(':')[2],
-        'partially filled',
-        sellOrderAmount - buyOrderAmount
+      updateOrder(sellOrderId, 'partially filled', sellOrderAmount);
+
+      await updateUserTables(
+        buyUserId,
+        sellUserId,
+        symbol,
+        sellOrderAmount,
+        buyOrderPrice
       );
 
       pushExecutions(
         'sell',
         buyOrderId,
-        stockAmount.split(':')[2],
+        sellOrderId,
         buyOrderPrice,
         buyOrderAmount,
         Date.now()
       );
 
-      // update sell order amount
-      sellOrderAmount -= buyOrderAmount;
-      stockAmount = `sell:${sellOrderAmount}:${stockAmount.split(':')[2]}`;
+      stockAmount = `sell:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
     }
   }
 };

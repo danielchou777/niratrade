@@ -40,8 +40,17 @@ export const updateOrder = async (orderId, status, partiallyFilled) => {
 
 export const updateUserStock = async (userId, symbol, quantity) => {
   const [rows] = await pool.execute(
-    'UPDATE user_stock SET quantity=? WHERE user_id=? AND symbol=?',
+    'UPDATE user_stock SET quantity = quantity + ? WHERE user_id=? AND symbol=?',
     [quantity, userId, symbol]
+  );
+
+  return rows;
+};
+
+export const updateUserBalance = async (userId, balance) => {
+  const [rows] = await pool.execute(
+    'UPDATE user SET balance = balance + ? WHERE user_id=?',
+    [balance, userId]
   );
 
   return rows;

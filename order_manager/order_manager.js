@@ -34,7 +34,7 @@ const server = net.createServer(async function (socket) {
 
     if (side === 'buy') {
       const data = {
-        stockAmount: `buy:${quantity}:${orderId}`,
+        stockAmount: `buy:${quantity}:${orderId}:${userId}:${symbol}`,
         stockPriceOrder: `${price}${time - Date.now()}`,
       };
 
@@ -48,12 +48,16 @@ const server = net.createServer(async function (socket) {
         ],
       });
 
-      console.log('writes: ', `buy:${quantity}:${orderId}`, price);
+      console.log(
+        'writes: ',
+        `buy:${quantity}:${orderId}:${userId}:${symbol}`,
+        price
+      );
     }
 
     if (side === 'sell') {
       const data = {
-        stockAmount: `sell:${quantity}:${orderId}`,
+        stockAmount: `sell:${quantity}:${orderId}:${userId}:${symbol}`,
         stockPriceOrder: `${price}${Date.now() - 1000000000000}`,
       };
 
@@ -68,7 +72,11 @@ const server = net.createServer(async function (socket) {
       });
 
       // if the message is written successfully, log it and increment `i`
-      console.log('writes: ', `sell:${quantity}:${orderId}`, price);
+      console.log(
+        'writes: ',
+        `sell:${quantity}:${orderId}:${userId}:${symbol}`,
+        price
+      );
     }
 
     await producer.disconnect();
