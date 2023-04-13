@@ -51,6 +51,8 @@ const consume = async () => {
     eachMessage: async ({ message, topic, partition }) => {
       let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
 
+      console.log('reads: ', stockAmount, stockPriceOrder);
+
       const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
 
       if (stockAmount.split(':')[0] === 'sell') {

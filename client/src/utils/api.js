@@ -32,6 +32,17 @@ const api = {
     });
     return await response.json();
   },
+
+  async getPositions(userId) {
+    const response = await fetch(`${api.hostname}/userdata/position`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return await response.json();
+  },
 };
 
 export default api;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import Swal from 'sweetalert2';
 
 const FormGroup = styled.div`
   width: 100%;
@@ -128,7 +129,7 @@ const SellButton = styled.button`
   }
 `;
 
-function OrderForm({ onSubmit, socket }) {
+function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
   const [buyQuantity, setBuyQuantity] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
   const [sellQuantity, setSellQuantity] = useState('');
@@ -168,18 +169,24 @@ function OrderForm({ onSubmit, socket }) {
     if (order) {
       onSubmit(order);
 
-      socket.emit('order', order);
-
       setBuyPrice('');
       setBuyQuantity('');
       setSellPrice('');
       setSellQuantity('');
 
-      alert('Order submitted');
+      Swal.fire(
+        'Order submitted',
+        'Your order has been submitted successfully',
+        'success'
+      );
+
+      setTimeout(() => {
+        setRefresh(refresh + 1);
+      }, 200);
     }
 
     if (!order) {
-      alert('Please enter a valid order');
+      Swal.fire('Invalid order', 'Please enter a valid order', 'error');
     }
   };
 

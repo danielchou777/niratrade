@@ -16,3 +16,11 @@ export const getStock = async (userId) => {
   );
   return rows;
 };
+
+export const getPosition = async (userId) => {
+  const [rows] = await pool.execute(
+    'SELECT * FROM orders WHERE user_id = ? AND (status = "open" OR status = "partially filled")',
+    [userId]
+  );
+  return rows;
+};

@@ -43,14 +43,14 @@ const buyExecution = async (
 
     // if no buy order, add to sell order book and break
     if (sellOrder.length === 0) {
-      cache.zadd(`buyOrderBook`, [stockPriceOrder, stockAmount]);
+      await cache.zadd(`buyOrderBook`, [stockPriceOrder, stockAmount]);
       isExecuted = true;
       break;
     }
 
     // if buy order price is lower than sell order price, add to sell order book and break
     if (sellOrderPrice > stockPrice) {
-      cache.zadd(`buyOrderBook`, [stockPriceOrder, stockAmount]);
+      await cache.zadd(`buyOrderBook`, [stockPriceOrder, stockAmount]);
       isExecuted = true;
       break;
     }
@@ -67,24 +67,24 @@ const buyExecution = async (
 
     // if sell order amount is greater than buy order amount, update sell order book and break
     if (sellOrderAmount > buyOrderAmount) {
-      cache.zadd(`sellOrderBook`, [
-        sellOrder[1],
-        `sell:${
-          sellOrderAmount - buyOrderAmount
-        }:${sellOrderId}:${sellUserId}:${symbol}`,
-      ]);
-
-      cache.zrem('sellOrderBook', sellOrder[0]);
-
       // update sell order status to partially filled
-      updateOrder(
-        sellOrderId,
-        'partially filled',
-        sellOrderAmount - buyOrderAmount
-      );
-
       // update buy order status to filled
-      updateOrder(buyOrderId, 'filled', 0);
+
+      await Promise.all([
+        cache.zadd(`sellOrderBook`, [
+          sellOrder[1],
+          `sell:${
+            sellOrderAmount - buyOrderAmount
+          }:${sellOrderId}:${sellUserId}:${symbol}`,
+        ]),
+        cache.zrem('sellOrderBook', sellOrder[0]),
+        updateOrder(
+          sellOrderId,
+          'partially filled',
+          sellOrderAmount - buyOrderAmount
+        ),
+        updateOrder(buyOrderId, 'filled', 0),
+      ]);
 
       await updateUserTables(
         buyUserId,
@@ -109,13 +109,14 @@ const buyExecution = async (
 
     // if sell order amount is equal to buy order amount, remove from sell order book and break
     if (sellOrderAmount == buyOrderAmount) {
-      cache.zrem(`sellOrderBook`, sellOrder[0]);
-
       // update sell order status to filled
-      updateOrder(sellOrderId, 'filled', 0);
-
       // update buy order status to filled
-      updateOrder(buyOrderId, 'filled', 0);
+
+      await Promise.all([
+        cache.zrem(`sellOrderBook`, sellOrder[0]),
+        updateOrder(sellOrderId, 'filled', 0),
+        updateOrder(buyOrderId, 'filled', 0),
+      ]);
 
       await updateUserTables(
         buyUserId,
@@ -140,22 +141,24 @@ const buyExecution = async (
 
     // if sell order amount is less than buy order amount, remove from sell order book and continue
     if (sellOrderAmount < buyOrderAmount) {
-      cache.zrem(`sellOrderBook`, sellOrder[0]);
-
       // update buy order amount
       buyOrderAmount -= sellOrderAmount;
 
       // update sell order status to filled
-      updateOrder(sellOrderId, 'filled', 0);
 
       // update buy order status to partially filled
-      updateOrder(buyOrderId, 'partially filled', buyOrderAmount);
+
+      await Promise.all([
+        cache.zrem(`sellOrderBook`, sellOrder[0]),
+        updateOrder(sellOrderId, 'filled', 0),
+        updateOrder(buyOrderId, 'partially filled', buyOrderAmount),
+      ]);
 
       await updateUserTables(
         buyUserId,
         sellUserId,
         symbol,
-        buyOrderAmount,
+        sellOrderAmount,
         sellOrderPrice
       );
 

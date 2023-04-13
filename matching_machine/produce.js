@@ -2,6 +2,7 @@ import fs from 'fs';
 import { Kafka } from 'kafkajs';
 import { promisify } from 'util';
 import { v1 as uuidv1 } from 'uuid';
+import { insertOrder } from '../models/orderManagerModels.js';
 
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
@@ -12,7 +13,7 @@ const time = 2208960000000; // 2040-01-01 00:00:00
 
 let orders;
 
-await promisify(fs.readFile)('matching_machine/testcase.txt', 'utf8').then(
+await promisify(fs.readFile)('matching_machine/testcase2.txt', 'utf8').then(
   (data) => {
     orders = data.split('\n');
   }
@@ -23,15 +24,21 @@ const produce = async () => {
 
   for (let i = 0; i < orders.length; i++) {
     try {
-      const randomStockAmount = orders[i].split(',')[2];
-      const randomStockPrice = orders[i].split(',')[1];
+      const quantity = orders[i].split(',')[2];
+      const price = orders[i].split(',')[1];
+      const symbol = 'DAN';
+      const userId = '728bd78e-8833-44bb-8488-917b70af4773';
+      const status = 'open';
+      const type = 'limit';
+      const side = orders[i].split(',')[0];
+      const partiallyFilled = quantity;
 
       const orderId = uuidv1();
 
-      if (orders[i].split(',')[0] === 'buy') {
+      if (side === 'buy') {
         const data = {
-          stockAmount: `buy:${randomStockAmount}:${orderId}`,
-          stockPriceOrder: `${randomStockPrice}${time - Date.now()}`,
+          stockAmount: `buy:${quantity}:${orderId}:${userId}:${symbol}`,
+          stockPriceOrder: `${price}${time - Date.now()}`,
         };
 
         await producer.send({
@@ -46,15 +53,15 @@ const produce = async () => {
 
         console.log(
           'writes: ',
-          `buy:${randomStockAmount}:${orderId}`,
-          randomStockPrice
+          `buy:${quantity}:${orderId}:${userId}:${symbol}`,
+          price
         );
       }
 
-      if (orders[i].split(',')[0] === 'sell') {
+      if (side === 'sell') {
         const data = {
-          stockAmount: `sell:${randomStockAmount}:${orderId}`,
-          stockPriceOrder: `${randomStockPrice}${Date.now() - 1000000000000}`,
+          stockAmount: `sell:${quantity}:${orderId}:${userId}:${symbol}`,
+          stockPriceOrder: `${price}${Date.now() - 1000000000000}`,
         };
 
         await producer.send({
@@ -70,14 +77,27 @@ const produce = async () => {
         // if the message is written successfully, log it and increment `i`
         console.log(
           'writes: ',
-          `sell:${randomStockAmount}:${orderId}`,
-          randomStockPrice
+          `sell:${quantity}:${orderId}:${userId}:${symbol}`,
+          price
         );
       }
+
+      await insertOrder(
+        orderId,
+        symbol,
+        userId,
+        price,
+        quantity,
+        type,
+        side,
+        status,
+        partiallyFilled
+      );
     } catch (err) {
       console.error('could not write message ' + err);
     }
   }
+  await producer.disconnect();
 };
 
 produce();

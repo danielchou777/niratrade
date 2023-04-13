@@ -15,7 +15,7 @@ CREATE TABLE
         name varchar(32) NOT NULL,
         email varchar(64) NOT NULL,
         password char(60) NOT NULL,
-        balance INT UNSIGNED NOT NULL,
+        balance BIGINT UNSIGNED NOT NULL,
         UNIQUE(user_id),
         UNIQUE(email)
     );

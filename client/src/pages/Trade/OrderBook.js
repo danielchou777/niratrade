@@ -4,8 +4,8 @@ import api from '../../utils/api';
 
 const OrderBookWrapper = styled.div`
   width: 100%;
-  height: 100%;
-  padding: 1rem;
+  height: 200px;
+  padding: 1rem 2rem 1rem;
   display: flex;
   flex-direction: row;
   gap: 20px;
@@ -25,6 +25,12 @@ const OrderWrapper = styled.div`
   flex-direction: row;
   justify-content: space-between;
   padding: 4px 0;
+  background: ${({ type, quantity }) => {
+    const stopPosition = `${quantity / 10}%`;
+    return type === 'buy'
+      ? `linear-gradient(to left, rgb(85, 227, 179, 0.3) ${stopPosition}, #131010 ${stopPosition})`
+      : `linear-gradient(to left, rgb(250, 103, 103, 0.3) ${stopPosition}, #131010 ${stopPosition})`;
+  }};
 `;
 
 const OrderPrice = styled.div`
@@ -51,11 +57,6 @@ const OrderBookHeader = styled.div`
   padding: 4px 0;
 `;
 
-const Total = styled.div`
-  font-weight: bold;
-  color: white;
-`;
-
 const SubTotal = styled.div`
   text-align: right;
   color: #bdbcb9;
@@ -73,27 +74,19 @@ const Amount = styled.div`
   color: #bdbcb9;
   width: 100px;
 `;
-const Subtotal = styled.div`
-  color: white;
-  width: 100px;
-`;
 
 function OrderBooks(props) {
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
-
-  const { socket } = props;
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
   React.useEffect(() => {
-    socket.on('orderBook', (data) => {
-      setBuyOrderBook(data.buyOrderBook);
-      setSellOrderBook(data.sellOrderBook);
-    });
-  }, [socket]);
+    setBuyOrderBook(props.buyOrderBook);
+    setSellOrderBook(props.sellOrderBook);
+  }, [props.buyOrderBook, props.sellOrderBook]);
 
   React.useEffect(() => {
     (async function fetchOrderBook() {
@@ -102,9 +95,6 @@ function OrderBooks(props) {
       setSellOrderBook(sellOrderBook);
     })();
   }, []);
-
-  const getTotal = (orders) =>
-    orders.reduce((total, order) => total + parseFloat(order[1]), 0);
 
   return (
     <OrderBookWrapper>
@@ -116,17 +106,21 @@ function OrderBooks(props) {
         </OrderBookHeader>
         {buyOrderBook && (
           <>
-            {buyOrderBook.map((order) => (
-              <OrderWrapper key={order[0]}>
-                <OrderPrice type='buy'>
-                  {thousandSeparator(order[0])}
-                </OrderPrice>
-                <OrderQty>{thousandSeparator(order[1])}</OrderQty>
-                <SubTotal>
-                  {thousandSeparator(Number(order[0]) * Number(order[1]))}
-                </SubTotal>
-              </OrderWrapper>
-            ))}
+            {buyOrderBook.map((order, index) => {
+              if (index < 5) {
+                return (
+                  <OrderWrapper key={order[0]} type='buy' quantity={order[1]}>
+                    <OrderPrice type='buy'>
+                      {thousandSeparator(order[0])}
+                    </OrderPrice>
+                    <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                    <SubTotal>
+                      {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                    </SubTotal>
+                  </OrderWrapper>
+                );
+              }
+            })}
             {/* <Total>Buy: {getTotal(buyOrderBook)}</Total> */}
           </>
         )}
@@ -139,18 +133,21 @@ function OrderBooks(props) {
         </OrderBookHeader>
         {sellOrderBook && (
           <>
-            {sellOrderBook.map((order) => (
-              <OrderWrapper key={order[0]}>
-                <OrderPrice type='sell'>
-                  {thousandSeparator(order[0])}
-                </OrderPrice>
-                <OrderQty>{thousandSeparator(order[1])}</OrderQty>
-                <SubTotal>
-                  {thousandSeparator(Number(order[0]) * Number(order[1]))}
-                </SubTotal>
-              </OrderWrapper>
-            ))}
-            {/* <Total>Sell: {getTotal(sellOrderBook)}</Total> */}
+            {sellOrderBook.map((order, index) => {
+              if (index < 5) {
+                return (
+                  <OrderWrapper key={order[0]} type='sell' quantity={order[1]}>
+                    <OrderPrice type='sell'>
+                      {thousandSeparator(order[0])}
+                    </OrderPrice>
+                    <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                    <SubTotal>
+                      {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                    </SubTotal>
+                  </OrderWrapper>
+                );
+              }
+            })}
           </>
         )}
       </OrderBook>

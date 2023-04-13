@@ -1,6 +1,6 @@
 import net from 'net';
 import { Kafka } from 'kafkajs';
-import { v1 as uuidv1 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 import { insertOrder } from '../models/orderManagerModels.js';
 
@@ -10,6 +10,8 @@ const topic = 'message-log';
 const kafka = new Kafka({ clientId, brokers });
 const producer = kafka.producer();
 const time = 2208960000000; // 2040-01-01 00:00:00
+
+await producer.connect();
 
 const server = net.createServer(async function (socket) {
   socket.on('data', async function (data) {
@@ -28,9 +30,19 @@ const server = net.createServer(async function (socket) {
     quantity = Number(quantity);
     partiallyFilled = Number(partiallyFilled);
 
-    const orderId = uuidv1();
+    const orderId = uuidv4();
 
-    await producer.connect();
+    await insertOrder(
+      orderId,
+      symbol,
+      userId,
+      price,
+      quantity,
+      type,
+      side,
+      status,
+      partiallyFilled
+    );
 
     if (side === 'buy') {
       const data = {
@@ -78,20 +90,6 @@ const server = net.createServer(async function (socket) {
         price
       );
     }
-
-    await producer.disconnect();
-
-    await insertOrder(
-      orderId,
-      symbol,
-      userId,
-      price,
-      quantity,
-      type,
-      side,
-      status,
-      partiallyFilled
-    );
 
     socket.write('order received', function () {
       console.log('server:收到 client端 傳輸資料為' + data);
