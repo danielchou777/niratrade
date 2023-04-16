@@ -18,14 +18,7 @@ import cache from '../utils/cache.js';
 // create a new consumer from the kafka client, and set its group ID
 const consumer = kafka.consumer({ groupId: clientId, maxInFlightRequests: 1 });
 
-async function pushExecutions(
-  orderType,
-  executedBuyOrderId,
-  executedSellOrderId,
-  stockPrice,
-  amount,
-  time
-) {
+async function pushExecutions(orderType, stockPrice, amount, time) {
   await cache.lpush(
     'executions',
     JSON.stringify({
@@ -50,13 +43,14 @@ const consume = async () => {
   await consumer.run({
     eachMessage: async ({ message, topic, partition }) => {
       let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
+      let broadcastUsers = [];
 
       console.log('reads: ', stockAmount, stockPriceOrder);
 
       const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
 
-      if (stockAmount.split(':')[0] === 'sell') {
-        await sellExecution(
+      if (stockAmount.split(':')[0] === 's') {
+        broadcastUsers = await sellExecution(
           stockPrice,
           stockPriceOrder,
           stockAmount,
@@ -64,8 +58,8 @@ const consume = async () => {
         );
       }
 
-      if (stockAmount.split(':')[0] === 'buy') {
-        await buyExecution(
+      if (stockAmount.split(':')[0] === 'b') {
+        broadcastUsers = await buyExecution(
           stockPrice,
           stockPriceOrder,
           stockAmount,
@@ -78,7 +72,12 @@ const consume = async () => {
         { topic, partition, offset: message.offset },
       ]);
 
+      const userId = stockAmount.split(':')[3];
+
+      broadcastUsers.push(userId);
+
       socketio.emit('execution', 'success');
+      socketio.emit('users', broadcastUsers);
     },
   });
 };

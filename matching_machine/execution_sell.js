@@ -3,6 +3,7 @@ import {
   updateOrder,
   updateUserStock,
   updateUserBalance,
+  insertExecution,
 } from '../models/orderManagerModels.js';
 
 const updateUserTables = async (
@@ -27,6 +28,7 @@ const sellExecution = async (
   pushExecutions
 ) => {
   let isExecuted = false;
+  const broadcastUsers = [];
 
   while (!isExecuted) {
     let buyOrder = await cache.zrevrangebyscore(
@@ -44,15 +46,13 @@ const sellExecution = async (
     // if no buy order, add to sell order book and break
     if (buyOrder.length === 0) {
       await cache.zadd(`sellOrderBook`, [stockPriceOrder, stockAmount]);
-      isExecuted = true;
-      break;
+      return broadcastUsers;
     }
 
     // if buy order price is lower than sell order price, add to sell order book and break
     if (buyOrderPrice < stockPrice) {
       await cache.zadd(`sellOrderBook`, [stockPriceOrder, stockAmount]);
-      isExecuted = true;
-      break;
+      return broadcastUsers;
     }
 
     let buyOrderAmount = Number(buyOrder[0].split(':')[1]);
@@ -73,17 +73,22 @@ const sellExecution = async (
       await Promise.all([
         cache.zadd(`buyOrderBook`, [
           buyOrder[1],
-          `buy:${
+          `b:${
             buyOrderAmount - sellOrderAmount
           }:${buyOrderId}:${buyUserId}:${symbol}`,
         ]),
         cache.zrem('buyOrderBook', buyOrder[0]),
-        updateOrder(
+        updateOrder(buyOrderId, '1', buyOrderAmount - sellOrderAmount),
+        updateOrder(sellOrderId, '2', 0),
+        insertExecution(
           buyOrderId,
-          'partially filled',
-          buyOrderAmount - sellOrderAmount
+          sellOrderId,
+          buyUserId,
+          sellUserId,
+          symbol,
+          sellOrderAmount,
+          buyOrderPrice
         ),
-        updateOrder(sellOrderId, 'filled', 0),
       ]);
 
       await updateUserTables(
@@ -94,17 +99,11 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions(
-        'sell',
-        buyOrderId,
-        sellOrderId,
-        buyOrderPrice,
-        sellOrderAmount,
-        Date.now()
-      );
+      pushExecutions('sell', buyOrderPrice, sellOrderAmount, Date.now());
 
-      isExecuted = true;
-      break;
+      broadcastUsers.push(buyUserId);
+
+      return broadcastUsers;
     }
 
     // if buy order amount is equal to sell order amount, remove from buy order book and break
@@ -113,8 +112,17 @@ const sellExecution = async (
       // update sell order status to filledupdateOrder(sellOrderId, 'filled', 0);
       await Promise.all([
         cache.zrem(`buyOrderBook`, buyOrder[0]),
-        updateOrder(buyOrderId, 'filled', 0),
-        updateOrder(sellOrderId, 'filled', 0),
+        updateOrder(buyOrderId, '2', 0),
+        updateOrder(sellOrderId, '2', 0),
+        insertExecution(
+          buyOrderId,
+          sellOrderId,
+          buyUserId,
+          sellUserId,
+          symbol,
+          sellOrderAmount,
+          buyOrderPrice
+        ),
       ]);
 
       await updateUserTables(
@@ -125,17 +133,11 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions(
-        'sell',
-        buyOrderId,
-        sellOrderId,
-        buyOrderPrice,
-        sellOrderAmount,
-        Date.now()
-      );
+      pushExecutions('sell', buyOrderPrice, sellOrderAmount, Date.now());
 
-      isExecuted = true;
-      break;
+      broadcastUsers.push(buyUserId);
+
+      return broadcastUsers;
     }
 
     // if buy order amount is less than sell order amount, remove from buy order book and continue
@@ -147,8 +149,17 @@ const sellExecution = async (
       // update sell order status to partially filled
       await Promise.all([
         cache.zrem(`buyOrderBook`, buyOrder[0]),
-        updateOrder(buyOrderId, 'filled', 0),
-        updateOrder(sellOrderId, 'partially filled', sellOrderAmount),
+        updateOrder(buyOrderId, '2', 0),
+        updateOrder(sellOrderId, '1', sellOrderAmount),
+        insertExecution(
+          buyOrderId,
+          sellOrderId,
+          buyUserId,
+          sellUserId,
+          symbol,
+          sellOrderAmount,
+          buyOrderPrice
+        ),
       ]);
 
       await updateUserTables(
@@ -159,16 +170,11 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions(
-        'sell',
-        buyOrderId,
-        sellOrderId,
-        buyOrderPrice,
-        buyOrderAmount,
-        Date.now()
-      );
+      pushExecutions('sell', buyOrderPrice, buyOrderAmount, Date.now());
 
-      stockAmount = `sell:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
+      broadcastUsers.push(buyUserId);
+
+      stockAmount = `s:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
     }
   }
 };

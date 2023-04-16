@@ -1,6 +1,6 @@
 import cache from '../utils/cache.js';
 
-export const getBuyOrderBook = async (req, res) => {
+export const getBuyOrderBook = async () => {
   let buyOrder = await cache.zrevrangebyscore(
     'buyOrderBook',
     'inf',
@@ -34,7 +34,7 @@ export const getBuyOrderBook = async (req, res) => {
   return result;
 };
 
-export const getSellOrderBook = async (req, res) => {
+export const getSellOrderBook = async () => {
   let sellOrder = await cache.zrangebyscore(
     'sellOrderBook',
     0,
@@ -66,7 +66,7 @@ export const getSellOrderBook = async (req, res) => {
   return result;
 };
 
-export const getExecutions = async (req, res) => {
+export const getExecutions = async () => {
   let executions = await cache.lrange('executions', 0, -1);
 
   executions = executions.map((execution) => {

@@ -109,12 +109,11 @@ const OpenOrderSide = styled.div`
   width: 12%;
   text-align: left;
   text-transform: capitalize;
-  color: ${({ side }) => (side === 'buy' ? '#55e3b3' : '#fa6767')};
+  color: ${({ side }) => (side === 'b' ? '#55e3b3' : '#fa6767')};
 `;
 
 function UserPosition(props) {
   const [openOrders, setOpenOrders] = React.useState(null);
-  // const [refresh, setRefresh] = React.useState(0);
 
   React.useEffect(() => {
     (async function fetchWallet() {
@@ -181,7 +180,7 @@ function UserPosition(props) {
             side,
             type,
             price,
-            partially_filled,
+            unfilled_quantity,
             created_at,
             quantity,
           } = order;
@@ -205,14 +204,16 @@ function UserPosition(props) {
             <OpenOrderWrapper key={order.id}>
               <OpenOrderDate>{time}</OpenOrderDate>
               <OpenOrder>{symbol}/NTD</OpenOrder>
-              <OpenOrder>{type}</OpenOrder>
-              <OpenOrderSide side={side}>{side}</OpenOrderSide>
+              <OpenOrder>{type === '2' ? 'limit' : 'NULL'}</OpenOrder>
+              <OpenOrderSide side={side}>
+                {side === 'b' ? 'buy' : 'sell'}
+              </OpenOrderSide>
               <OpenOrder>{price}</OpenOrder>
               <OpenOrder>{`${
-                quantity - partially_filled
+                quantity - unfilled_quantity
               }/${quantity}`}</OpenOrder>
               <OpenOrder>
-                {Math.floor(((quantity - partially_filled) * 100) / quantity)}%
+                {Math.floor(((quantity - unfilled_quantity) * 100) / quantity)}%
               </OpenOrder>
               <OpenOrder>{thousandSeparator(price * quantity)}</OpenOrder>
             </OpenOrderWrapper>

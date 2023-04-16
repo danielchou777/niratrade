@@ -2,7 +2,13 @@ import net from 'net';
 import { Kafka } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
 
-import { insertOrder } from '../models/orderManagerModels.js';
+import {
+  insertOrder,
+  checkUserBalance,
+  checkUserStock,
+  setUserLockedBalance,
+  setUserLockedStock,
+} from '../models/orderManagerModels.js';
 
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
@@ -15,22 +21,28 @@ await producer.connect();
 
 const server = net.createServer(async function (socket) {
   socket.on('data', async function (data) {
-    let {
-      symbol,
-      userId,
-      price,
-      quantity,
-      type,
-      side,
-      status,
-      partiallyFilled,
-    } = JSON.parse(data);
+    let { symbol, userId, price, quantity, type, side, status } =
+      JSON.parse(data);
 
     price = Number(price);
     quantity = Number(quantity);
-    partiallyFilled = Number(partiallyFilled);
 
     const orderId = uuidv4();
+
+    const { balance: userBalance, locked_balance: userLockedBalance } =
+      await checkUserBalance(userId);
+    const { quantity: userStock, locked_quantity: userLockedQuantity } =
+      await checkUserStock(userId, symbol);
+
+    if (side === 'b' && userBalance - userLockedBalance < price * quantity) {
+      socket.write('balance not enough');
+      return;
+    }
+
+    if (side === 's' && userStock - userLockedQuantity < quantity) {
+      socket.write('stock not enough');
+      return;
+    }
 
     await insertOrder(
       orderId,
@@ -41,12 +53,14 @@ const server = net.createServer(async function (socket) {
       type,
       side,
       status,
-      partiallyFilled
+      quantity
     );
 
-    if (side === 'buy') {
+    if (side === 'b') {
+      await setUserLockedBalance(userId, price * quantity);
+
       const data = {
-        stockAmount: `buy:${quantity}:${orderId}:${userId}:${symbol}`,
+        stockAmount: `b:${quantity}:${orderId}:${userId}:${symbol}`,
         stockPriceOrder: `${price}${time - Date.now()}`,
       };
 
@@ -62,14 +76,16 @@ const server = net.createServer(async function (socket) {
 
       console.log(
         'writes: ',
-        `buy:${quantity}:${orderId}:${userId}:${symbol}`,
+        `b:${quantity}:${orderId}:${userId}:${symbol}`,
         price
       );
     }
 
-    if (side === 'sell') {
+    if (side === 's') {
+      await setUserLockedStock(userId, symbol, quantity);
+
       const data = {
-        stockAmount: `sell:${quantity}:${orderId}:${userId}:${symbol}`,
+        stockAmount: `s:${quantity}:${orderId}:${userId}:${symbol}`,
         stockPriceOrder: `${price}${Date.now() - 1000000000000}`,
       };
 
@@ -83,10 +99,9 @@ const server = net.createServer(async function (socket) {
         ],
       });
 
-      // if the message is written successfully, log it and increment `i`
       console.log(
         'writes: ',
-        `sell:${quantity}:${orderId}:${userId}:${symbol}`,
+        `s:${quantity}:${orderId}:${userId}:${symbol}`,
         price
       );
     }

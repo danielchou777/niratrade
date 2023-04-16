@@ -1,4 +1,5 @@
 const api = {
+  //TODO change this to your own hostname
   hostname: 'http://localhost:3000/api/1.0',
 
   async sendOrder(order) {

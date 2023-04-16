@@ -19,7 +19,7 @@ export const getStock = async (userId) => {
 
 export const getPosition = async (userId) => {
   const [rows] = await pool.execute(
-    'SELECT * FROM orders WHERE user_id = ? AND (status = "open" OR status = "partially filled")',
+    'SELECT * FROM orders WHERE user_id = ? AND (status = "0" OR status = "1")',
     [userId]
   );
   return rows;

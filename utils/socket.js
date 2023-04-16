@@ -28,6 +28,12 @@ export const createSocketServer = (server) => {
       io.emit('marketTrade', { executions });
     });
 
+    socket.on('users', async (data) => {
+      for (let i = 0; i < data.length; i++) {
+        io.emit(`user-${data[i]}`, { data: 'updated' });
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log('user disconnected');
     });

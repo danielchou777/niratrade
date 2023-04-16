@@ -146,10 +146,9 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
         userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
         price: buyPrice,
         quantity: buyQuantity,
-        type: 'limit',
-        side: 'buy',
-        status: 'open',
-        partiallyFilled: buyQuantity,
+        type: '2',
+        side: 'b',
+        status: '0',
       };
     }
 
@@ -159,10 +158,9 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
         userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
         price: sellPrice,
         quantity: sellQuantity,
-        type: 'limit',
-        side: 'sell',
-        status: 'open',
-        partiallyFilled: sellQuantity,
+        type: '2',
+        side: 's',
+        status: '0',
       };
     }
 
@@ -180,9 +178,9 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
         'success'
       );
 
-      setTimeout(() => {
-        setRefresh(refresh + 1);
-      }, 200);
+      // setTimeout(() => {
+      //   setRefresh(refresh + 1);
+      // }, 200);
     }
 
     if (!order) {

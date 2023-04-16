@@ -9,7 +9,8 @@ import UserWallet from './UserWallet';
 import UserPosition from './UserPosition';
 
 import socketIOClient from 'socket.io-client';
-const ENDPOINT = 'http://127.0.0.1:3000';
+//TODO change to your own endpoint
+const ENDPOINT = 'http://localhost:3000';
 
 const Wrapper = styled.div`
   padding: 60px 20px;
@@ -54,12 +55,18 @@ function Trade() {
       setSellOrderBook(data.sellOrderBook);
     }
 
+    function handleUserOrder(data) {
+      setRefresh((prevRefresh) => prevRefresh + 1);
+    }
+
     socket.on('marketTrade', handleMarketTrade);
     socket.on('orderBook', handleOrderBook);
+    socket.on('user-44c10eb0-2943-4282-88fc-fa01d1cb6ac0', handleUserOrder);
 
     return () => {
       socket.off('marketTrade', handleMarketTrade);
       socket.off('orderBook', handleOrderBook);
+      socket.off('user-44c10eb0-2943-4282-88fc-fa01d1cb6ac0', handleUserOrder);
     };
   }, []);
 
