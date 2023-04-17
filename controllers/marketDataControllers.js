@@ -7,14 +7,17 @@ import {
 import { StatusCodes } from 'http-status-codes';
 
 export const orderBook = async (req, res) => {
-  const buyOrderBook = await getBuyOrderBook();
-  const sellOrderBook = await getSellOrderBook();
+  const { symbol } = req.query;
+
+  const buyOrderBook = await getBuyOrderBook(symbol);
+  const sellOrderBook = await getSellOrderBook(symbol);
 
   res.status(StatusCodes.OK).json({ buyOrderBook, sellOrderBook });
 };
 
 export const executions = async (req, res) => {
-  let executions = await getExecutions();
+  const { symbol } = req.query;
+  let executions = await getExecutions(symbol);
 
   res.status(StatusCodes.OK).json({ executions });
 };

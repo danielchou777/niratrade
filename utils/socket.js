@@ -20,12 +20,13 @@ export const createSocketServer = (server) => {
     console.log('a user connected');
 
     socket.on('execution', async (data) => {
-      const buyOrderBook = await getBuyOrderBook();
-      const sellOrderBook = await getSellOrderBook();
-      const executions = await getExecutions();
-      io.emit('orderBook', { buyOrderBook, sellOrderBook });
+      const buyOrderBook = await getBuyOrderBook(data);
+      const sellOrderBook = await getSellOrderBook(data);
+      const executions = await getExecutions(data);
 
-      io.emit('marketTrade', { executions });
+      io.emit(`orderBook-${data}`, { buyOrderBook, sellOrderBook });
+
+      io.emit(`marketTrade-${data}`, { executions });
     });
 
     socket.on('users', async (data) => {

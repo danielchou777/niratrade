@@ -91,6 +91,7 @@ const StockTitleWrapper = styled.div`
 const StockWrapper = styled.div`
   color: #bdbcb9;
   display: flex;
+  margin-bottom: 1rem;
   font-size: 0.9rem;
   justify-content: space-between;
   flex-direction: row;
@@ -99,8 +100,6 @@ const StockWrapper = styled.div`
 const StockSymbol = styled.div``;
 
 const StockAmount = styled.div``;
-
-const Stock = styled.div``;
 
 function UserWallet(props) {
   const [balance, setBalance] = useState(0);

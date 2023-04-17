@@ -90,11 +90,13 @@ function OrderBooks(props) {
 
   React.useEffect(() => {
     (async function fetchOrderBook() {
-      const { buyOrderBook, sellOrderBook } = await api.getOrderBook();
+      const { buyOrderBook, sellOrderBook } = await api.getOrderBook(
+        `${props.stock}`
+      );
       setBuyOrderBook(buyOrderBook);
       setSellOrderBook(sellOrderBook);
     })();
-  }, []);
+  }, [props.stock]);
 
   return (
     <OrderBookWrapper>

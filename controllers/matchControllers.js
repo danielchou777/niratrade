@@ -28,24 +28,13 @@ export const order = (req, res, next) => {
     throw new Error.BadRequestError('invalid status');
   }
 
-  const client = net.connect({ port: 8124 }, function () {
-    console.log('client端: 向 server端 請求連線');
-  });
+  const client = net.connect({ port: 8124 }, function () {});
 
-  client.on('connect', function (data) {
-    console.log('client端: 與 server端 連線成功，可以開始傳輸資料');
-  });
+  client.on('connect', function (data) {});
 
-  client.write(JSON.stringify(req.body), function () {
-    console.log(
-      'client端：開始傳輸資料，傳輸的資料為' + JSON.stringify(req.body)
-    );
-  });
+  client.write(JSON.stringify(req.body), function () {});
 
-  // data event： 到收到資料傳輸時觸發事件 ， argument 為對象傳輸的物件
   client.on('data', async function (data) {
-    console.log('client端：收到 server端 傳輸資料為' + data);
-
     if (data.toString() === 'order failed') {
       res.status(StatusCodes.BAD_REQUEST).json({ msg: `${data.toString()}` });
       return;
@@ -61,7 +50,6 @@ export const order = (req, res, next) => {
       return;
     }
 
-    //結束 client 端 連線
     client.end();
 
     res.status(StatusCodes.OK).json({ msg: `${data.toString()}` });

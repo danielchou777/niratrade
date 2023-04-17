@@ -13,13 +13,17 @@ const api = {
     return await response.json();
   },
 
-  async getOrderBook() {
-    const response = await fetch(`${api.hostname}/marketdata/orderBook`);
+  async getOrderBook(symbol) {
+    const response = await fetch(
+      `${api.hostname}/marketdata/orderBook?symbol=${symbol}`
+    );
     return await response.json();
   },
 
-  async getExecutions() {
-    const response = await fetch(`${api.hostname}/marketdata/executions`);
+  async getExecutions(symbol) {
+    const response = await fetch(
+      `${api.hostname}/marketdata/executions?symbol=${symbol}`
+    );
     return await response.json();
   },
 

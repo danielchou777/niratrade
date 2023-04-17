@@ -17,7 +17,6 @@ import sellExecution from './execution_sell.js';
 import cache from '../utils/cache.js';
 
 // create a new consumer from the kafka client, and set its group ID
-const consumer = kafka.consumer({ groupId: clientId, maxInFlightRequests: 1 });
 
 async function pushExecutions(
   orderType,
@@ -42,54 +41,55 @@ async function pushExecutions(
   }
 }
 
-for (let stock of stocks) {
-  const consume = async () => {
-    await consumer.connect();
+const consumer = kafka.consumer({
+  groupId: clientId,
+  maxInFlightRequests: 1,
+});
 
-    await consumer.subscribe({ topic: `stock-${stock}` });
+await consumer.connect();
 
-    await consumer.run({
-      eachMessage: async ({ message, topic, partition }) => {
-        let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
-        let broadcastUsers = [];
+await consumer.subscribe({ topics: ['stock-DAN', 'stock-APPL'] });
 
-        console.log('reads: ', stockAmount, stockPriceOrder);
+await consumer.run({
+  eachMessage: async ({ message, topic, partition }) => {
+    let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
+    let broadcastUsers = [];
+    const stock = topic.split('-')[1];
 
-        const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
+    console.log('reads: ', stockAmount, stockPriceOrder);
 
-        if (stockAmount.split(':')[0] === 's') {
-          broadcastUsers = await sellExecution(
-            stockPrice,
-            stockPriceOrder,
-            stockAmount,
-            pushExecutions,
-            stock
-          );
-        }
+    const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
 
-        if (stockAmount.split(':')[0] === 'b') {
-          broadcastUsers = await buyExecution(
-            stockPrice,
-            stockPriceOrder,
-            stockAmount,
-            pushExecutions,
-            stock
-          );
-        }
+    if (stockAmount.split(':')[0] === 's') {
+      broadcastUsers = await sellExecution(
+        stockPrice,
+        stockPriceOrder,
+        stockAmount,
+        pushExecutions,
+        stock
+      );
+    }
 
-        // Commit the offset for the processed message
-        await consumer.commitOffsets([
-          { topic: `stock-${stock}`, partition, offset: message.offset },
-        ]);
+    if (stockAmount.split(':')[0] === 'b') {
+      broadcastUsers = await buyExecution(
+        stockPrice,
+        stockPriceOrder,
+        stockAmount,
+        pushExecutions,
+        stock
+      );
+    }
 
-        const userId = stockAmount.split(':')[3];
+    // Commit the offset for the processed message
+    await consumer.commitOffsets([
+      { topic: `stock-${stock}`, partition, offset: message.offset },
+    ]);
 
-        broadcastUsers.push(userId);
+    const userId = stockAmount.split(':')[3];
 
-        socketio.emit('execution', 'success');
-        socketio.emit('users', broadcastUsers);
-      },
-    });
-  };
-  consume();
-}
+    broadcastUsers.push(userId);
+
+    socketio.emit('execution', `${stock}`);
+    socketio.emit('users', broadcastUsers);
+  },
+});

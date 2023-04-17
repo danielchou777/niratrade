@@ -1,8 +1,8 @@
 import cache from '../utils/cache.js';
 
-export const getBuyOrderBook = async () => {
+export const getBuyOrderBook = async (symbol) => {
   let buyOrder = await cache.zrevrangebyscore(
-    'buyOrderBook',
+    `buyOrderBook-${symbol}`,
     'inf',
     0,
     'WITHSCORES',
@@ -34,9 +34,9 @@ export const getBuyOrderBook = async () => {
   return result;
 };
 
-export const getSellOrderBook = async () => {
+export const getSellOrderBook = async (symbol) => {
   let sellOrder = await cache.zrangebyscore(
-    'sellOrderBook',
+    `sellOrderBook-${symbol}`,
     0,
     'inf',
     'WITHSCORES',
@@ -66,8 +66,8 @@ export const getSellOrderBook = async () => {
   return result;
 };
 
-export const getExecutions = async () => {
-  let executions = await cache.lrange('executions', 0, -1);
+export const getExecutions = async (symbol) => {
+  let executions = await cache.lrange(`executions-${symbol}`, 0, -1);
 
   executions = executions.map((execution) => {
     return JSON.parse(execution);

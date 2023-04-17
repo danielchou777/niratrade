@@ -35,6 +35,7 @@ function Trade() {
   const [executions, setExecutions] = React.useState(null);
   const [stockInfo, setStockInfo] = React.useState(null);
   const [refresh, setRefresh] = React.useState(0);
+  const [stock, setStock] = React.useState('DAN');
 
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
@@ -55,40 +56,45 @@ function Trade() {
       setSellOrderBook(data.sellOrderBook);
     }
 
-    function handleUserOrder(data) {
+    function handleUserOrder() {
       setRefresh((prevRefresh) => prevRefresh + 1);
     }
 
-    socket.on('marketTrade', handleMarketTrade);
-    socket.on('orderBook', handleOrderBook);
+    socket.on(`marketTrade-${stock}`, handleMarketTrade);
+    socket.on(`orderBook-${stock}`, handleOrderBook);
     socket.on('user-44c10eb0-2943-4282-88fc-fa01d1cb6ac0', handleUserOrder);
 
     return () => {
-      socket.off('marketTrade', handleMarketTrade);
-      socket.off('orderBook', handleOrderBook);
+      socket.off(`marketTrade-${stock}`, handleMarketTrade);
+      socket.off(`orderBook-${stock}`, handleOrderBook);
       socket.off('user-44c10eb0-2943-4282-88fc-fa01d1cb6ac0', handleUserOrder);
     };
-  }, []);
+  }, [stock]);
 
   React.useEffect(() => {
     (async function fetchExecutions() {
-      const result = await api.getExecutions();
+      const result = await api.getExecutions(stock);
       setExecutions(result.executions);
       setStockInfo(result.executions[0]);
     })();
-  }, []);
+  }, [stock]);
 
   return (
     <Wrapper>
       <UserWallet refresh={refresh} setRefresh={setRefresh} />
-      <StockInfo stockInfo={stockInfo} />
+      <StockInfo stockInfo={stockInfo} setStock={setStock} stock={stock} />
       <OrderWrapper>
         <OrderForm
           onSubmit={api.sendOrder}
           refresh={refresh}
           setRefresh={setRefresh}
+          stock={stock}
         />
-        <OrderBooks buyOrderBook={buyOrderBook} sellOrderBook={sellOrderBook} />
+        <OrderBooks
+          buyOrderBook={buyOrderBook}
+          sellOrderBook={sellOrderBook}
+          stock={stock}
+        />
         <UserPosition refresh={refresh} setRefresh={setRefresh} />
       </OrderWrapper>
       <MarketTrades executions={executions} />

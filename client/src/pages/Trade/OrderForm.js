@@ -129,7 +129,7 @@ const SellButton = styled.button`
   }
 `;
 
-function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
+function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
   const [buyQuantity, setBuyQuantity] = useState('');
   const [buyPrice, setBuyPrice] = useState('');
   const [sellQuantity, setSellQuantity] = useState('');
@@ -142,7 +142,7 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
 
     if (type === 'buy' && buyQuantity && buyPrice) {
       order = {
-        symbol: 'DAN',
+        symbol: `${stock}`,
         userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
         price: buyPrice,
         quantity: buyQuantity,
@@ -154,7 +154,7 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh }) {
 
     if (type === 'sell' && sellQuantity && sellPrice) {
       order = {
-        symbol: 'DAN',
+        symbol: `${stock}`,
         userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
         price: sellPrice,
         quantity: sellQuantity,

@@ -105,9 +105,7 @@ const server = net.createServer(async function (socket) {
       );
     }
 
-    socket.write('order received', function () {
-      console.log('server:收到 client端 傳輸資料為' + data);
-    });
+    socket.write('order received', function () {});
   });
 });
 
