@@ -48,6 +48,11 @@ const api = {
     });
     return await response.json();
   },
+
+  async getStocks() {
+    const response = await fetch(`${api.hostname}/marketdata/stocks`);
+    return await response.json();
+  },
 };
 
 export default api;

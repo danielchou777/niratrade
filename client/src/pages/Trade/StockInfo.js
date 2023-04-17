@@ -85,7 +85,6 @@ function StockInfo(props) {
   // const [stockInfo, setStockInfo] = useState('');
   const [stockPrice, setStockPrice] = useState('');
   const [orderType, setOrderType] = useState('');
-  const stocks = ['DAN', 'APPL'];
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -101,14 +100,19 @@ function StockInfo(props) {
   return (
     <Wrapper>
       <InfoWrapper>
-        <StockName>{'Daniel Inc. ' + `  (${props.stock})`}</StockName>
+        <StockName>
+          {props.stocks.length > 0
+            ? props.stocks.find((stock) => stock.symbol === props.stock).name +
+              ` (${props.stock})`
+            : ''}
+        </StockName>
         <StockPrice type={orderType}>
           {thousandSeparator(stockPrice)}
         </StockPrice>
       </InfoWrapper>
       <StockSearhBarWrapper>
         <SearchBar
-          defaultValue={props.stock}
+          value={props.stock}
           onChange={(e) => {
             props.setStock(e.target.value);
           }}
@@ -116,9 +120,9 @@ function StockInfo(props) {
           <SearchBarOption value='' disabled>
             -- SELECT A STOCK --
           </SearchBarOption>
-          {stocks.map((stock) => (
-            <SearchBarOption key={stock} value={stock}>
-              {stock}
+          {props.stocks.map((stock) => (
+            <SearchBarOption key={stock.symbol} value={stock.symbol}>
+              {stock.symbol}
             </SearchBarOption>
           ))}
         </SearchBar>

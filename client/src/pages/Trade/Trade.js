@@ -36,6 +36,7 @@ function Trade() {
   const [stockInfo, setStockInfo] = React.useState(null);
   const [refresh, setRefresh] = React.useState(0);
   const [stock, setStock] = React.useState('DAN');
+  const [stocks, setStocks] = React.useState([]);
 
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
@@ -79,10 +80,22 @@ function Trade() {
     })();
   }, [stock]);
 
+  React.useEffect(() => {
+    (async function fetchStocks() {
+      const result = await api.getStocks();
+      setStocks(result.stocks);
+    })();
+  }, []);
+
   return (
     <Wrapper>
       <UserWallet refresh={refresh} setRefresh={setRefresh} />
-      <StockInfo stockInfo={stockInfo} setStock={setStock} stock={stock} />
+      <StockInfo
+        stockInfo={stockInfo}
+        setStock={setStock}
+        stock={stock}
+        stocks={stocks}
+      />
       <OrderWrapper>
         <OrderForm
           onSubmit={api.sendOrder}

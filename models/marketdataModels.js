@@ -1,4 +1,5 @@
 import cache from '../utils/cache.js';
+import pool from '../utils/database.js';
 
 export const getBuyOrderBook = async (symbol) => {
   let buyOrder = await cache.zrevrangebyscore(
@@ -74,4 +75,10 @@ export const getExecutions = async (symbol) => {
   });
 
   return executions;
+};
+
+export const getStocks = async () => {
+  const [rows] = await pool.query('SELECT symbol, name  FROM stock');
+
+  return rows;
 };

@@ -2,6 +2,7 @@ import {
   getBuyOrderBook,
   getSellOrderBook,
   getExecutions,
+  getStocks,
 } from '../models/marketdataModels.js';
 
 import { StatusCodes } from 'http-status-codes';
@@ -20,4 +21,10 @@ export const executions = async (req, res) => {
   let executions = await getExecutions(symbol);
 
   res.status(StatusCodes.OK).json({ executions });
+};
+
+export const stocks = async (req, res) => {
+  let stocks = await getStocks();
+
+  res.status(StatusCodes.OK).json({ stocks });
 };
