@@ -2,7 +2,8 @@
 import { Kafka } from 'kafkajs';
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
-const topic = 'message-log';
+// const topic = 'stock-DAN';
+const stocks = ['DAN', 'APPL'];
 const kafka = new Kafka({ clientId, brokers });
 
 // socket.io
@@ -18,9 +19,15 @@ import cache from '../utils/cache.js';
 // create a new consumer from the kafka client, and set its group ID
 const consumer = kafka.consumer({ groupId: clientId, maxInFlightRequests: 1 });
 
-async function pushExecutions(orderType, stockPrice, amount, time) {
+async function pushExecutions(
+  orderType,
+  stockPrice,
+  amount,
+  time,
+  stockSymbol
+) {
   await cache.lpush(
-    'executions',
+    `executions-${stockSymbol}`,
     JSON.stringify({
       orderType,
       stockPrice,
@@ -29,57 +36,60 @@ async function pushExecutions(orderType, stockPrice, amount, time) {
     })
   );
 
-  const executionsLenth = await cache.llen('executions');
+  const executionsLenth = await cache.llen(`executions-${stockSymbol}`);
   if (executionsLenth > 30) {
-    await cache.ltrim('executions', 0, 29);
+    await cache.ltrim(`executions-${stockSymbol}`, 0, 29);
   }
 }
 
-const consume = async () => {
-  await consumer.connect();
+for (let stock of stocks) {
+  const consume = async () => {
+    await consumer.connect();
 
-  await consumer.subscribe({ topic });
+    await consumer.subscribe({ topic: `stock-${stock}` });
 
-  await consumer.run({
-    eachMessage: async ({ message, topic, partition }) => {
-      let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
-      let broadcastUsers = [];
+    await consumer.run({
+      eachMessage: async ({ message, topic, partition }) => {
+        let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
+        let broadcastUsers = [];
 
-      console.log('reads: ', stockAmount, stockPriceOrder);
+        console.log('reads: ', stockAmount, stockPriceOrder);
 
-      const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
+        const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
 
-      if (stockAmount.split(':')[0] === 's') {
-        broadcastUsers = await sellExecution(
-          stockPrice,
-          stockPriceOrder,
-          stockAmount,
-          pushExecutions
-        );
-      }
+        if (stockAmount.split(':')[0] === 's') {
+          broadcastUsers = await sellExecution(
+            stockPrice,
+            stockPriceOrder,
+            stockAmount,
+            pushExecutions,
+            stock
+          );
+        }
 
-      if (stockAmount.split(':')[0] === 'b') {
-        broadcastUsers = await buyExecution(
-          stockPrice,
-          stockPriceOrder,
-          stockAmount,
-          pushExecutions
-        );
-      }
+        if (stockAmount.split(':')[0] === 'b') {
+          broadcastUsers = await buyExecution(
+            stockPrice,
+            stockPriceOrder,
+            stockAmount,
+            pushExecutions,
+            stock
+          );
+        }
 
-      // Commit the offset for the processed message
-      await consumer.commitOffsets([
-        { topic, partition, offset: message.offset },
-      ]);
+        // Commit the offset for the processed message
+        await consumer.commitOffsets([
+          { topic: `stock-${stock}`, partition, offset: message.offset },
+        ]);
 
-      const userId = stockAmount.split(':')[3];
+        const userId = stockAmount.split(':')[3];
 
-      broadcastUsers.push(userId);
+        broadcastUsers.push(userId);
 
-      socketio.emit('execution', 'success');
-      socketio.emit('users', broadcastUsers);
-    },
-  });
-};
-
-consume();
+        socketio.emit('execution', 'success');
+        socketio.emit('users', broadcastUsers);
+      },
+    });
+  };
+  consume();
+}

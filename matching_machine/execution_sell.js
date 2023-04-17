@@ -25,14 +25,15 @@ const sellExecution = async (
   stockPrice,
   stockPriceOrder,
   stockAmount,
-  pushExecutions
+  pushExecutions,
+  stockSymbol
 ) => {
   let isExecuted = false;
   const broadcastUsers = [];
 
   while (!isExecuted) {
     let buyOrder = await cache.zrevrangebyscore(
-      'buyOrderBook',
+      `buyOrderBook-${stockSymbol}`,
       'inf',
       0,
       'WITHSCORES',
@@ -45,13 +46,19 @@ const sellExecution = async (
 
     // if no buy order, add to sell order book and break
     if (buyOrder.length === 0) {
-      await cache.zadd(`sellOrderBook`, [stockPriceOrder, stockAmount]);
+      await cache.zadd(`sellOrderBook-${stockSymbol}`, [
+        stockPriceOrder,
+        stockAmount,
+      ]);
       return broadcastUsers;
     }
 
     // if buy order price is lower than sell order price, add to sell order book and break
     if (buyOrderPrice < stockPrice) {
-      await cache.zadd(`sellOrderBook`, [stockPriceOrder, stockAmount]);
+      await cache.zadd(`sellOrderBook-${stockSymbol}`, [
+        stockPriceOrder,
+        stockAmount,
+      ]);
       return broadcastUsers;
     }
 
@@ -71,13 +78,13 @@ const sellExecution = async (
       // update sell order status to filled
 
       await Promise.all([
-        cache.zadd(`buyOrderBook`, [
+        cache.zadd(`buyOrderBook-${stockSymbol}`, [
           buyOrder[1],
           `b:${
             buyOrderAmount - sellOrderAmount
           }:${buyOrderId}:${buyUserId}:${symbol}`,
         ]),
-        cache.zrem('buyOrderBook', buyOrder[0]),
+        cache.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
         updateOrder(buyOrderId, '1', buyOrderAmount - sellOrderAmount),
         updateOrder(sellOrderId, '2', 0),
         insertExecution(
@@ -99,7 +106,13 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions('sell', buyOrderPrice, sellOrderAmount, Date.now());
+      pushExecutions(
+        'sell',
+        buyOrderPrice,
+        sellOrderAmount,
+        Date.now(),
+        stockSymbol
+      );
 
       broadcastUsers.push(buyUserId);
 
@@ -111,7 +124,7 @@ const sellExecution = async (
       // update buy order status to filled
       // update sell order status to filledupdateOrder(sellOrderId, 'filled', 0);
       await Promise.all([
-        cache.zrem(`buyOrderBook`, buyOrder[0]),
+        cache.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
         updateOrder(buyOrderId, '2', 0),
         updateOrder(sellOrderId, '2', 0),
         insertExecution(
@@ -133,7 +146,13 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions('sell', buyOrderPrice, sellOrderAmount, Date.now());
+      pushExecutions(
+        'sell',
+        buyOrderPrice,
+        sellOrderAmount,
+        Date.now(),
+        stockSymbol
+      );
 
       broadcastUsers.push(buyUserId);
 
@@ -148,7 +167,7 @@ const sellExecution = async (
       // update buy order status to filled
       // update sell order status to partially filled
       await Promise.all([
-        cache.zrem(`buyOrderBook`, buyOrder[0]),
+        cache.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
         updateOrder(buyOrderId, '2', 0),
         updateOrder(sellOrderId, '1', sellOrderAmount),
         insertExecution(
@@ -170,7 +189,13 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions('sell', buyOrderPrice, buyOrderAmount, Date.now());
+      pushExecutions(
+        'sell',
+        buyOrderPrice,
+        buyOrderAmount,
+        Date.now(),
+        stockSymbol
+      );
 
       broadcastUsers.push(buyUserId);
 

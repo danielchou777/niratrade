@@ -12,7 +12,6 @@ import {
 
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
-const topic = 'message-log';
 const kafka = new Kafka({ clientId, brokers });
 const producer = kafka.producer();
 const time = 2208960000000; // 2040-01-01 00:00:00
@@ -65,7 +64,7 @@ const server = net.createServer(async function (socket) {
       };
 
       await producer.send({
-        topic,
+        topic: `stock-${symbol}`,
         messages: [
           {
             key: 'buyOrder',
@@ -90,7 +89,7 @@ const server = net.createServer(async function (socket) {
       };
 
       await producer.send({
-        topic,
+        topic: `stock-${symbol}`,
         messages: [
           {
             key: 'sellOrder',
