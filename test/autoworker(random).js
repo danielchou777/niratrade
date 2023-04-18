@@ -13,7 +13,7 @@ setInterval(async () => {
     side: 's',
     status: '0',
   });
-}, Math.floor(1500));
+}, 1200);
 
 setInterval(async () => {
   const price = 90 + Math.floor(Math.random() * 20);
@@ -28,10 +28,10 @@ setInterval(async () => {
     side: 'b',
     status: '0',
   });
-}, Math.floor(1500));
+}, Math.floor(1200));
 
 setInterval(async () => {
-  const price = 90 + Math.floor(Math.random() * 20);
+  const price = 290 + Math.floor(Math.random() * 20);
   const quantity = 5 + Math.floor(Math.random() * 10);
 
   await axios.post('http://localhost:3000/api/1.0/match/order', {
@@ -43,10 +43,10 @@ setInterval(async () => {
     side: 's',
     status: '0',
   });
-}, Math.floor(1500));
+}, Math.floor(1200));
 
 setInterval(async () => {
-  const price = 90 + Math.floor(Math.random() * 20);
+  const price = 290 + Math.floor(Math.random() * 20);
   const quantity = 5 + Math.floor(Math.random() * 10);
 
   await axios.post('http://localhost:3000/api/1.0/match/order', {
@@ -58,4 +58,4 @@ setInterval(async () => {
     side: 'b',
     status: '0',
   });
-}, Math.floor(1500));
+}, Math.floor(1200));

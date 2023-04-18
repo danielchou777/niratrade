@@ -53,6 +53,17 @@ const api = {
     const response = await fetch(`${api.hostname}/marketdata/stocks`);
     return await response.json();
   },
+
+  async getUserExecutions(userId, symbol) {
+    const response = await fetch(`${api.hostname}/userdata/execution`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, symbol }),
+    });
+    return await response.json();
+  },
 };
 
 export default api;

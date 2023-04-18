@@ -93,8 +93,8 @@ const sellExecution = async (
           buyUserId,
           sellUserId,
           symbol,
-          sellOrderAmount,
-          buyOrderPrice
+          buyOrderPrice,
+          sellOrderAmount
         ),
       ]);
 
@@ -133,8 +133,8 @@ const sellExecution = async (
           buyUserId,
           sellUserId,
           symbol,
-          sellOrderAmount,
-          buyOrderPrice
+          buyOrderPrice,
+          sellOrderAmount
         ),
       ]);
 
@@ -176,8 +176,8 @@ const sellExecution = async (
           buyUserId,
           sellUserId,
           symbol,
-          sellOrderAmount,
-          buyOrderPrice
+          buyOrderPrice,
+          buyOrderAmount
         ),
       ]);
 

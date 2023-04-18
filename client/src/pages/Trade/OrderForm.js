@@ -136,7 +136,7 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
   const [sellPrice, setSellPrice] = useState('');
   const [type, setType] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     let order;
 
@@ -165,7 +165,12 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
     }
 
     if (order) {
-      onSubmit(order);
+      const response = await onSubmit(order);
+
+      if (response.msg !== 'order received') {
+        Swal.fire('Invalid order', response.msg, 'error');
+        return;
+      }
 
       setBuyPrice('');
       setBuyQuantity('');
@@ -177,10 +182,6 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
         'Your order has been submitted successfully',
         'success'
       );
-
-      // setTimeout(() => {
-      //   setRefresh(refresh + 1);
-      // }, 200);
     }
 
     if (!order) {

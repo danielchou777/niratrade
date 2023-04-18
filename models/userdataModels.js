@@ -24,3 +24,31 @@ export const getPosition = async (userId) => {
   );
   return rows;
 };
+
+export const getExecution = async (userId, symbol) => {
+  const [rows] = await pool.execute(
+    'SELECT buy_user_id, sell_user_id, symbol, price, quantity, created_at FROM execution WHERE (buy_user_id = ? OR sell_user_id = ?) AND symbol = ?',
+    [userId, userId, symbol]
+  );
+
+  rows.reverse();
+
+  rows.map((row) => {
+    if (row.buy_user_id === userId) {
+      row.orderType = 'buy';
+    } else {
+      row.orderType = 'sell';
+    }
+    row.stockPrice = row.price;
+    row.amount = row.quantity;
+    row.time = new Date(row.created_at).getTime();
+    delete row.buy_user_id;
+    delete row.sell_user_id;
+    delete row.price;
+    delete row.quantity;
+    delete row.created_at;
+    return row;
+  });
+
+  return rows;
+};

@@ -110,7 +110,7 @@ function Trade() {
         />
         <UserPosition refresh={refresh} setRefresh={setRefresh} />
       </OrderWrapper>
-      <MarketTrades executions={executions} />
+      <MarketTrades executions={executions} stock={stock} refresh={refresh} />
     </Wrapper>
   );
 }

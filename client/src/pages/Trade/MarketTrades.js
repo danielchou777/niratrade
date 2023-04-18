@@ -1,20 +1,26 @@
 import React from 'react';
 import styled from 'styled-components';
+import api from '../../utils/api';
 
 const MarketTradesWrapper = styled.div`
   width: 100%;
-  height: 100%;
+  height: 750px;
   padding: 1rem 1rem 1rem 2rem;
   background-color: #131010;
   grid-column: 5 / 6;
   grid-row: 1 / 3;
 `;
 
+const MarketTradesTitleWrapper = styled.div`
+  display: flex;
+`;
+
 const MarketTradesTitle = styled.div`
-  color: #fbc200;
+  color: ${({ isClick }) => (isClick ? '#fbc200' : '#bdbcb9')};
   font-size: 0.9rem;
   text-align: left;
   margin: 0.5rem 1rem 1rem 0rem;
+  cursor: pointer;
 `;
 
 const MarketTradesHeader = styled.div`
@@ -71,6 +77,8 @@ const ExecutionTime = styled.div`
 
 function MarketTrades(props) {
   const [executions, setExecutions] = React.useState(props.executions);
+  const [isMarketTrade, setIsMarketTrade] = React.useState(true);
+  const [isMyTrade, setIsMyTrade] = React.useState(false);
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -87,12 +95,44 @@ function MarketTrades(props) {
   };
 
   React.useEffect(() => {
+    if (!isMarketTrade) return;
     setExecutions(props.executions);
   }, [props.executions]);
 
+  React.useEffect(() => {
+    if (!isMyTrade) return;
+    (async () => {
+      const result = await api.getUserExecutions(
+        '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
+        props.stock
+      );
+      setExecutions(result.result);
+    })();
+  }, [isMyTrade, props.stock, props.refresh]);
+
   return (
     <MarketTradesWrapper>
-      <MarketTradesTitle>Market Trades</MarketTradesTitle>
+      <MarketTradesTitleWrapper>
+        <MarketTradesTitle
+          isClick={isMarketTrade}
+          onClick={() => {
+            setIsMarketTrade(true);
+            setIsMyTrade(false);
+            setExecutions(props.executions);
+          }}
+        >
+          Market Trades
+        </MarketTradesTitle>
+        <MarketTradesTitle
+          isClick={isMyTrade}
+          onClick={async () => {
+            setIsMarketTrade(false);
+            setIsMyTrade(true);
+          }}
+        >
+          My Trades
+        </MarketTradesTitle>
+      </MarketTradesTitleWrapper>
       <MarketTradesHeader>
         <Price>Price(NTD)</Price>
         <Amount>Amount</Amount>
