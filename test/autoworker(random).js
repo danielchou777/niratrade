@@ -13,7 +13,7 @@ setInterval(async () => {
     side: 's',
     status: '0',
   });
-}, 1200);
+}, 200);
 
 setInterval(async () => {
   const price = 90 + Math.floor(Math.random() * 20);
@@ -28,7 +28,7 @@ setInterval(async () => {
     side: 'b',
     status: '0',
   });
-}, Math.floor(1200));
+}, Math.floor(200));
 
 setInterval(async () => {
   const price = 290 + Math.floor(Math.random() * 20);
@@ -43,7 +43,7 @@ setInterval(async () => {
     side: 's',
     status: '0',
   });
-}, Math.floor(1200));
+}, Math.floor(200));
 
 setInterval(async () => {
   const price = 290 + Math.floor(Math.random() * 20);
@@ -58,4 +58,4 @@ setInterval(async () => {
     side: 'b',
     status: '0',
   });
-}, Math.floor(1200));
+}, Math.floor(200));

@@ -6,6 +6,9 @@ import {
   insertExecution,
 } from '../models/orderManagerModels.js';
 
+import { updateMarketData } from '../models/marketdataModels.js';
+import { roundToMinute } from '../utils/util.js';
+
 const updateUserTables = async (
   buyUserId,
   sellUserId,
@@ -32,6 +35,8 @@ const buyExecution = async (
   const broadcastUsers = [];
 
   while (!isExecuted) {
+    const date = roundToMinute(new Date());
+
     let sellOrder = await cache.zrangebyscore(
       `sellOrderBook-${stockSymbol}`,
       0,
@@ -96,6 +101,7 @@ const buyExecution = async (
           sellOrderPrice,
           buyOrderAmount
         ),
+        updateMarketData(symbol, sellOrderPrice, date, buyOrderAmount),
       ]);
 
       await updateUserTables(
@@ -137,6 +143,7 @@ const buyExecution = async (
           sellOrderPrice,
           buyOrderAmount
         ),
+        updateMarketData(symbol, sellOrderPrice, date, buyOrderAmount),
       ]);
 
       await updateUserTables(
@@ -182,6 +189,7 @@ const buyExecution = async (
           sellOrderPrice,
           sellOrderAmount
         ),
+        updateMarketData(symbol, sellOrderPrice, date, sellOrderAmount),
       ]);
 
       await updateUserTables(
