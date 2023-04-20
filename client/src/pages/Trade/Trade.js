@@ -106,7 +106,7 @@ function Trade() {
           setRefresh={setRefresh}
           stock={stock}
         />
-        <MarketChart></MarketChart>
+        <MarketChart stock={stock}></MarketChart>
         <OrderBooks
           buyOrderBook={buyOrderBook}
           sellOrderBook={sellOrderBook}

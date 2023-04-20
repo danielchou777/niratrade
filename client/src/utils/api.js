@@ -64,6 +64,13 @@ const api = {
     });
     return await response.json();
   },
+
+  async getMarketChartData(symbol) {
+    const response = await fetch(
+      `${api.hostname}/marketdata/marketchart?symbol=${symbol}`
+    );
+    return await response.json();
+  },
 };
 
 export default api;

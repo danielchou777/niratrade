@@ -3,8 +3,7 @@ import styled from 'styled-components';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 import darkUnica from 'highcharts/themes/dark-unica'; // Import the dark-unica theme
-import { data } from './data.js';
-import moment from 'moment';
+// import { data } from './data.js';
 import api from '../../utils/api';
 
 const MarketChartWrapper = styled.div`
@@ -13,10 +12,13 @@ const MarketChartWrapper = styled.div`
   background-color: #131010;
   color: white;
 `;
+
+darkUnica(Highcharts);
+
 let volumeColor = '';
+
 let ohlc = [],
   volume = [],
-  dataLength = data.length,
   // set the allowed units for data grouping
   groupingUnits = {
     forced: true,
@@ -27,68 +29,111 @@ let ohlc = [],
         [1, 2, 5, 10, 20, 25, 50, 100, 200, 500], // allowed multiples
       ],
       ['second', [1, 2, 5, 10, 15, 30]],
-      ['minute', [15, 30]],
-      ['hour', [12]],
+      ['minute', [1, 5, 10, 15, 30]],
+      ['hour', [1, 3, 6, 12]],
       ['day', [1]],
       ['week', [1]],
       ['month', [6]],
       ['year', null],
     ],
-  },
-  i = 0;
+  };
 
-for (i; i < dataLength; i += 1) {
-  ohlc.push([
-    data[i][0], // the date
-    data[i][1], // open
-    data[i][2], // high
-    data[i][3], // low
-    data[i][4], // close
-  ]);
+const sortMarketData = (data) => {
+  ohlc = [];
+  for (let i = 0; i < data.length; i++) {
+    ohlc.push([
+      data[i][0] * 1000, // the date
+      data[i][1], // open
+      data[i][2], // high
+      data[i][3], // low
+      data[i][4], // close
+    ]);
 
-  if (i === 0) {
-    volumeColor = '#CCCCCC';
-  } else {
     if (data[i][1] < data[i][4]) {
       volumeColor = '#55e3b3';
     } else {
       volumeColor = '#fa6767';
     }
+
+    volume.push({
+      x: data[i][0] * 1000, // the date
+      y: data[i][5],
+      color: volumeColor,
+    });
   }
+  return ohlc;
+};
 
-  volume.push({
-    x: data[i][0], // the date
-    y: data[i][5],
-    color: volumeColor,
-  });
-}
-
-const options = () => ({
+const options = (ohlc) => ({
   rangeSelector: {
     enabled: true,
-    selected: 10,
+    selected: 6,
     buttons: [
       {
-        type: 'month',
-        count: 6,
-        text: '1d',
+        type: 'hour',
+        count: 1,
+        text: '1m',
+        preserveDataGrouping: true,
+        dataGrouping: {
+          forced: true,
+          units: [['minute', [1]]],
+        },
+      },
+      {
+        type: 'hour',
+        count: 3,
+        text: '5m',
+        preserveDataGrouping: true,
+        dataGrouping: {
+          forced: true,
+          units: [['minute', [5]]],
+        },
+      },
+      {
+        type: 'hour',
+        count: 'All',
+        text: '10m',
+        preserveDataGrouping: true,
+        dataGrouping: {
+          forced: true,
+          units: [['minute', [10]]],
+        },
+      },
+      {
+        type: 'hour',
+        count: 'All',
+        text: '30m',
+        preserveDataGrouping: true,
+        dataGrouping: {
+          forced: true,
+          units: [['minute', [30]]],
+        },
+      },
+      {
+        type: 'day',
+        count: 'All',
+        text: '1hr',
+        preserveDataGrouping: true,
+        dataGrouping: {
+          forced: true,
+          units: [['hour', [1]]],
+        },
+      },
+      {
+        type: 'week',
+        count: 'All',
+        text: 'all',
         preserveDataGrouping: true,
         dataGrouping: {
           forced: true,
           units: [['day', [1]]],
         },
       },
-      {
-        type: 'month',
-        count: 'All',
-        text: '1w',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['week', [1]]],
-        },
-      },
     ],
+  },
+
+  time: {
+    timezoneOffset: -8 * 60,
   },
 
   yAxis: [
@@ -180,13 +225,21 @@ const options = () => ({
 });
 
 function MarketChart(props) {
-  darkUnica(Highcharts);
+  const [chartData, setChartData] = React.useState([]);
+
+  React.useEffect(() => {
+    api.getMarketChartData(props.stock).then((res) => {
+      console.log(res.marketdata);
+      const sortedMarketData = sortMarketData(res.marketdata);
+      setChartData(sortedMarketData);
+    });
+  }, [props.stock]);
 
   return (
     <MarketChartWrapper>
       <HighchartsReact
         highcharts={Highcharts}
-        options={options()}
+        options={options(chartData)}
         theme={darkUnica}
       />
     </MarketChartWrapper>

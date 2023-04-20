@@ -208,3 +208,14 @@ export const moveRowToTodayHistory = async (symbol, time) => {
     [symbol, time]
   );
 };
+
+export const getMarketDataHistory = async (symbol) => {
+  const [rows] = await pool.query(
+    'SELECT * FROM market_data_today WHERE symbol = ?',
+    [symbol]
+  );
+
+  console.log(rows);
+
+  return rows;
+};
