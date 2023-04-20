@@ -7,6 +7,7 @@ import MarketTrades from './MarketTrades';
 import StockInfo from './StockInfo';
 import UserWallet from './UserWallet';
 import UserPosition from './UserPosition';
+import MarketChart from './MarketChart';
 
 import socketIOClient from 'socket.io-client';
 //TODO change to your own endpoint
@@ -25,7 +26,7 @@ const Wrapper = styled.div`
 const OrderWrapper = styled.div`
   height: 100%;
   grid-column: 2 / 5;
-  grid-row: 2 / 3;
+  grid-row: 1 / 3;
   display: flex;
   flex-direction: column;
 `;
@@ -90,19 +91,22 @@ function Trade() {
   return (
     <Wrapper>
       <UserWallet refresh={refresh} setRefresh={setRefresh} />
-      <StockInfo
-        stockInfo={stockInfo}
-        setStock={setStock}
-        stock={stock}
-        stocks={stocks}
-      />
+
       <OrderWrapper>
+        <StockInfo
+          stockInfo={stockInfo}
+          setStock={setStock}
+          stock={stock}
+          stocks={stocks}
+        />
+
         <OrderForm
           onSubmit={api.sendOrder}
           refresh={refresh}
           setRefresh={setRefresh}
           stock={stock}
         />
+        <MarketChart></MarketChart>
         <OrderBooks
           buyOrderBook={buyOrderBook}
           sellOrderBook={sellOrderBook}

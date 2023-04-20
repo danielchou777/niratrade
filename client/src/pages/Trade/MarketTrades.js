@@ -4,7 +4,7 @@ import api from '../../utils/api';
 
 const MarketTradesWrapper = styled.div`
   width: 100%;
-  height: 750px;
+  height: 100%;
   padding: 1rem 1rem 1rem 2rem;
   background-color: #131010;
   grid-column: 5 / 6;

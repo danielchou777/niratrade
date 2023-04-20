@@ -33,6 +33,8 @@ const createEmptyRowWithOHLC = async (symbol) => {
   now.setMinutes(now.getMinutes() + 1);
   const unixTime = Math.floor(now.getTime() / 1000);
 
+  console.log(unixTime);
+
   await updateMarketDataEveryMinute(previousClosePrice, symbol, unixTime);
 
   // Set the timestamp to the next minute
