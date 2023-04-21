@@ -71,6 +71,28 @@ const api = {
     );
     return await response.json();
   },
+
+  async signin(email, password) {
+    const response = await fetch(`${api.hostname}/user/signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    return await response.json();
+  },
+
+  async signup(name, email, password) {
+    const response = await fetch(`${api.hostname}/user/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+    return await response.json();
+  },
 };
 
 export default api;

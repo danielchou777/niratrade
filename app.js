@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/1.0/match', jwtVerification, matchRouter);
 app.use('/api/1.0/marketdata', marketdataRouter);
-app.use('/api/1.0/userdata', jwtVerification, userdataRouter);
+app.use('/api/1.0/userdata', userdataRouter);
 app.use('/api/1.0/user', userAuthRouter);
 
 app.use(notFound);

@@ -229,7 +229,6 @@ function MarketChart(props) {
 
   React.useEffect(() => {
     api.getMarketChartData(props.stock).then((res) => {
-      console.log(res.marketdata);
       const sortedMarketData = sortMarketData(res.marketdata);
       setChartData(sortedMarketData);
     });

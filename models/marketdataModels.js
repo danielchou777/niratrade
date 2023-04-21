@@ -215,7 +215,5 @@ export const getMarketDataHistory = async (symbol) => {
     [symbol]
   );
 
-  console.log(rows);
-
   return rows;
 };

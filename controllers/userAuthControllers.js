@@ -50,7 +50,6 @@ export const signup = async (req, res) => {
 
 export const signin = async (req, res) => {
   let payload;
-  let user;
 
   const { email, password } = req.body;
 

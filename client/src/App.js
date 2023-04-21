@@ -15,7 +15,7 @@ const GlobalStyle = createGlobalStyle`
   }
 
   #root {
-    min-height: 100vh;
+    height: 100vh;
     padding: 60px 0 80px;
     position: relative;
 
