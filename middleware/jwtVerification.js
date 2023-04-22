@@ -4,6 +4,7 @@ import { isTokenValid } from '../utils/util.js';
 
 const jwtVerification = async (req, res, next) => {
   // check if authorization header is provided
+
   if (!req.headers.authorization) {
     throw new Error.UnauthenticatedError('No Credentials Provided');
   }

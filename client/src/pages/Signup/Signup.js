@@ -3,11 +3,13 @@ import styled from 'styled-components';
 import api from '../../utils/api';
 import Swal from 'sweetalert2';
 import * as EmailValidator from 'email-validator';
-import Investment from './Investment.png';
-import Finance from './Finance.png';
+import Investment from '../../images/Investment.png';
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../store/UserContext';
 
 const SignupWrapper = styled.div`
   display: flex;
+  height: 90vh;
   flex-direction: row;
   justify-content: center;
   align-items: center;
@@ -94,6 +96,9 @@ function Register() {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const { setUser } = React.useContext(UserContext);
+
+  const navigate = useNavigate();
 
   function handleNameChange(e) {
     setName(e.target.value);
@@ -109,7 +114,6 @@ function Register() {
 
   function handleSignup(e) {
     e.preventDefault();
-    console.log(email, password);
     if (!email || !password || !name) {
       Swal.fire({
         icon: 'error',
@@ -149,7 +153,8 @@ function Register() {
           return;
         }
         window.localStorage.setItem('jwtToken', json.data.access_token);
-        window.location.href = './trade';
+        setUser(json.data);
+        navigate(`/trade`);
       })
       .catch((error) => {
         Swal.fire({

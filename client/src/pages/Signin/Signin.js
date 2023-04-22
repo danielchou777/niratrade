@@ -3,11 +3,13 @@ import styled from 'styled-components';
 import api from '../../utils/api';
 import Swal from 'sweetalert2';
 import * as EmailValidator from 'email-validator';
-import Investment from './Investment.png';
-import Finance from './Finance.png';
+import Finance from '../../images/Finance.png';
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../store/UserContext';
 
 const SigninWrapper = styled.div`
   display: flex;
+  height: 90vh;
   flex-direction: row;
   justify-content: center;
   align-items: center;
@@ -121,6 +123,9 @@ const CreateAccountBtn = styled.button`
 function Login() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const { setUser } = React.useContext(UserContext);
+
+  const navigate = useNavigate();
 
   function handleEmailChange(e) {
     setEmail(e.target.value);
@@ -154,7 +159,8 @@ function Login() {
       .signin(email, password)
       .then((json) => {
         window.localStorage.setItem('jwtToken', json.data.access_token);
-        window.location.href = './trade';
+        setUser(json.data);
+        navigate(`/trade`);
       })
       .catch((error) => {
         Swal.fire({
@@ -188,7 +194,7 @@ function Login() {
         <DivingLine>or</DivingLine>
         <CreateAccountBtn
           onClick={() => {
-            window.location.href = './signup';
+            navigate(`/signup`);
           }}
         >
           Create Account

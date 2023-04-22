@@ -76,7 +76,7 @@ export const signin = async (req, res) => {
 
   const { user_id, name } = result[0];
 
-  payload = { name, email, user_id };
+  payload = { name, email, userId: user_id };
 
   const jwt = createJWT({ payload });
 
@@ -85,6 +85,18 @@ export const signin = async (req, res) => {
       access_token: jwt,
       access_expired: +process.env.JWT_LIFETIME,
       userId: user_id,
+      name,
+      email,
+    },
+  });
+};
+
+export const userProfile = async (req, res) => {
+  const { userId, name, email } = req.payload;
+  console.log(userId, name, email);
+  res.status(StatusCodes.OK).json({
+    data: {
+      userId,
       name,
       email,
     },

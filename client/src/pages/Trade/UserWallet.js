@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import api from '../../utils/api';
-import Swal from 'sweetalert2';
+import { UserContext } from '../../store/UserContext';
 
 const Wrapper = styled.div`
   height: 100%;
@@ -26,35 +26,6 @@ const Title = styled.div`
   font-size: 0.9rem;
   text-align: left;
   margin-bottom: 1rem;
-`;
-
-const RefreshIcon = styled.div`
-  width: 1rem;
-  height: 1rem;
-  color: #fbc200;
-  cursor: pointer;
-
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.1);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  &:hover {
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 const BalanceWrapper = styled.div`
@@ -105,19 +76,20 @@ function UserWallet(props) {
   const [balance, setBalance] = useState(0);
   const [userStock, setUserStock] = useState([]);
   const [userId, setUserId] = useState('');
+  const { user } = React.useContext(UserContext);
 
   React.useEffect(() => {
     (async function fetchWallet() {
-      const result = await api.getWallet(
-        '44c10eb0-2943-4282-88fc-fa01d1cb6ac0'
-      );
+      if (!user) return;
+
+      const result = await api.getWallet(user.userId);
 
       const { balance, stock, userId } = result;
       setBalance(balance);
       setUserStock(stock);
       setUserId(userId.slice(0, 8));
     })();
-  }, [props.refresh]);
+  }, [props.refresh, user]);
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -127,33 +99,6 @@ function UserWallet(props) {
     <Wrapper>
       <TitleWrapper>
         <Title>Summary</Title>
-        <RefreshIcon
-          onClick={() => {
-            props.setRefresh(props.refresh + 1);
-            Swal.fire({
-              icon: 'success',
-              title: 'Refreshing...',
-              showConfirmButton: false,
-              timer: 700,
-            });
-          }}
-        >
-          <svg
-            version='1.1'
-            viewBox='0 0 129 129'
-            enableBackground='new 0 0 129 129'
-          >
-            <g>
-              <path
-                d='M118.5,6.5c-2.3,0-4.1,1.8-4.1,4.1v24.3c-10.3-17.3-29-28.4-49.9-28.4c-32,0-58,26-58,58.1s26,58,58,58s58-26,58-58   c0-2.3-1.8-4.1-4.1-4.1s-4.1,1.8-4.1,4.1c0,27.5-22.4,49.9-49.9,49.9S14.6,92,14.6,64.5S37,14.6,64.5,14.6   c19.7,0,37.3,11.5,45.3,29.1H81.1c-2.3,0-4.1,1.8-4.1,4.1s1.8,4.1,4.1,4.1h37.3c2.3,0,4.1-1.8,4.1-4.1V10.5   C122.5,8.3,120.7,6.5,118.5,6.5z'
-                id='id_101'
-                style={{ fill: '#ffcacb' }}
-                stroke='currentColor' // Use currentColor to inherit color from parent element
-                strokeWidth='8'
-              ></path>
-            </g>
-          </svg>
-        </RefreshIcon>
       </TitleWrapper>
       <BalanceWrapper>
         <BalanceTitle>User ID</BalanceTitle>

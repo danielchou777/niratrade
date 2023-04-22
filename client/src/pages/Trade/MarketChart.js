@@ -66,6 +66,7 @@ const sortMarketData = (data) => {
 
 const options = (ohlc) => ({
   rangeSelector: {
+    animation: false,
     enabled: true,
     selected: 6,
     buttons: [
@@ -199,6 +200,7 @@ const options = (ohlc) => ({
   plotOptions: {
     series: {
       enableMouseTracking: true,
+      animation: false,
     },
   },
 
@@ -224,7 +226,7 @@ const options = (ohlc) => ({
   ],
 });
 
-function MarketChart(props) {
+const MarketChart = React.memo((props) => {
   const [chartData, setChartData] = React.useState([]);
 
   React.useEffect(() => {
@@ -237,12 +239,13 @@ function MarketChart(props) {
   return (
     <MarketChartWrapper>
       <HighchartsReact
+        isPureConfig={false}
         highcharts={Highcharts}
         options={options(chartData)}
         theme={darkUnica}
       />
     </MarketChartWrapper>
   );
-}
+});
 
 export default MarketChart;

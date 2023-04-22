@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom/client';
+import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import App from './App';

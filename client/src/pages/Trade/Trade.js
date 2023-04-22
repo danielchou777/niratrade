@@ -8,10 +8,8 @@ import StockInfo from './StockInfo';
 import UserWallet from './UserWallet';
 import UserPosition from './UserPosition';
 import MarketChart from './MarketChart';
-
-import socketIOClient from 'socket.io-client';
-//TODO change to your own endpoint
-const ENDPOINT = 'http://localhost:3000';
+import Swal from 'sweetalert2';
+import { UserContext } from '../../store/UserContext';
 
 const Wrapper = styled.div`
   padding: 60px 20px;
@@ -32,21 +30,33 @@ const OrderWrapper = styled.div`
 `;
 
 function Trade() {
-  const socketRef = React.useRef(null);
   const [executions, setExecutions] = React.useState(null);
   const [stockInfo, setStockInfo] = React.useState(null);
   const [refresh, setRefresh] = React.useState(0);
   const [stock, setStock] = React.useState('DAN');
   const [stocks, setStocks] = React.useState([]);
-
+  const { user, refreshSocket, socket } = React.useContext(UserContext);
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
 
   React.useEffect(() => {
-    if (!socketRef.current) {
-      socketRef.current = socketIOClient(ENDPOINT);
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) {
+      Swal.fire({
+        title: 'Please Sign In To Unlock',
+        icon: 'warning',
+        showConfirmButton: false,
+        timer: 1500,
+      }).then(() => {
+        window.location.href = './signin';
+      });
+      return;
     }
-    const socket = socketRef.current;
+  }, []);
+
+  React.useEffect(() => {
+    console.log(socket);
+    if (!socket) return;
 
     function handleMarketTrade(data) {
       setExecutions(data.executions);
@@ -64,14 +74,20 @@ function Trade() {
 
     socket.on(`marketTrade-${stock}`, handleMarketTrade);
     socket.on(`orderBook-${stock}`, handleOrderBook);
-    socket.on('user-44c10eb0-2943-4282-88fc-fa01d1cb6ac0', handleUserOrder);
+
+    if (user) {
+      socket.on(`user-${user.userId}`, handleUserOrder);
+    }
 
     return () => {
-      socket.off(`marketTrade-${stock}`, handleMarketTrade);
-      socket.off(`orderBook-${stock}`, handleOrderBook);
-      socket.off('user-44c10eb0-2943-4282-88fc-fa01d1cb6ac0', handleUserOrder);
+      socket.off(`marketTrade-${stock}`);
+      socket.off(`orderBook-${stock}`);
+
+      if (user) {
+        socket.off(`user-${user.userId}`);
+      }
     };
-  }, [stock]);
+  }, [refreshSocket]);
 
   React.useEffect(() => {
     (async function fetchExecutions() {

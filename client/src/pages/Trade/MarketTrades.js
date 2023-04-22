@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import api from '../../utils/api';
+import { UserContext } from '../../store/UserContext';
 
 const MarketTradesWrapper = styled.div`
   width: 100%;
@@ -79,6 +80,7 @@ function MarketTrades(props) {
   const [executions, setExecutions] = React.useState(props.executions);
   const [isMarketTrade, setIsMarketTrade] = React.useState(true);
   const [isMyTrade, setIsMyTrade] = React.useState(false);
+  const { user } = React.useContext(UserContext);
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -101,14 +103,13 @@ function MarketTrades(props) {
 
   React.useEffect(() => {
     if (!isMyTrade) return;
+    if (!user) return;
+
     (async () => {
-      const result = await api.getUserExecutions(
-        '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
-        props.stock
-      );
+      const result = await api.getUserExecutions(user.userId, props.stock);
       setExecutions(result.result);
     })();
-  }, [isMyTrade, props.stock, props.refresh]);
+  }, [isMyTrade, props.stock, props.refresh, user]);
 
   return (
     <MarketTradesWrapper>
