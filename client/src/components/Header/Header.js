@@ -1,10 +1,12 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BsFillPersonFill } from 'react-icons/bs';
+import { AiFillCaretDown } from 'react-icons/ai';
 import styled from 'styled-components';
 import logo from './logo.png';
 import api from '../../utils/api';
 import { UserContext } from '../../store/UserContext';
+import Swal from 'sweetalert2';
 
 const Wrapper = styled.div`
   position: fixed;
@@ -81,19 +83,61 @@ const Signin = styled.div`
 `;
 
 const UserName = styled.div`
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 13px;
+  position: relative;
   text-transform: uppercase;
   color: #fff;
   margin-left: auto;
   margin-right: 20px;
   padding: 0 10px;
   height: 36px;
-  background-color: #000;
+  background-color: #222;
   border-radius: 4px;
   text-align: center;
   display: flex;
+  justify-content: space-between;
   align-items: center;
+
+  &:hover {
+    cursor: pointer;
+    color: #ffc733;
+  }
+`;
+
+const UserNameStyle = styled.div`
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: bold;
+`;
+
+/* DropdownContent */
+const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 1px;
+  padding: 10px 0;
+  width: 100%;
+  background-color: #222;
+  border-radius: 4px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+`;
+
+/* DropdownItem */
+const DropdownItem = styled.div`
+  color: #fff;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    color: #ffc733;
+    // background-color: #3f3a3a;
+  }
 `;
 
 const services = [
@@ -114,6 +158,24 @@ const services = [
 function Header() {
   const navigate = useNavigate();
   const [isSignin, setIsSignin] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    window.localStorage.removeItem('jwtToken');
+
+    Swal.fire(
+      'Logout',
+      'You have been successfully logged out.',
+      'success'
+    ).then(() => {
+      setIsSignin(false);
+      navigate('/');
+    });
+  };
 
   const { user, setUser } = useContext(UserContext);
 
@@ -131,6 +193,7 @@ function Header() {
 
       if (result.msg === 'Invalid Credentials') {
         window.localStorage.removeItem('jwtToken');
+        setUser('');
         return;
       }
 
@@ -156,7 +219,17 @@ function Header() {
         ))}
       </ServiceLinks>
       {isSignin ? (
-        <UserName>{`Welcome Back ${user.name}`}</UserName>
+        <UserName onClick={handleDropdownToggle}>
+          {`Welcome Back`}
+          <UserNameStyle>{` ${user.name}`}</UserNameStyle>
+          <AiFillCaretDown size={16} />
+          {isDropdownOpen ? (
+            <DropdownContent>
+              {/* Dropdown content goes here */}
+              <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
+            </DropdownContent>
+          ) : null}
+        </UserName>
       ) : (
         <Signin onClick={() => navigate(`/signin`)}>
           <BsFillPersonFill size={20} />

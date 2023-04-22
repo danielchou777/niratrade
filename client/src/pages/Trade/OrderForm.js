@@ -165,7 +165,8 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
     }
 
     if (order) {
-      const response = await onSubmit(order);
+      const jwtToken = window.localStorage.getItem('jwtToken');
+      const response = await onSubmit(order, jwtToken);
 
       if (response.msg !== 'order received') {
         Swal.fire('Invalid order', response.msg, 'error');

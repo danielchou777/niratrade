@@ -160,7 +160,13 @@ function Login() {
       .then((json) => {
         window.localStorage.setItem('jwtToken', json.data.access_token);
         setUser(json.data);
-        navigate(`/trade`);
+        Swal.fire(
+          'Success!',
+          'You have successfully logged in to NiraTrade!',
+          'success'
+        ).then(() => {
+          navigate(`/trade`);
+        });
       })
       .catch((error) => {
         Swal.fire({

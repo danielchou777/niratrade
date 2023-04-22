@@ -2,11 +2,12 @@ const api = {
   //TODO change this to your own hostname
   hostname: 'http://localhost:3000/api/1.0',
 
-  async sendOrder(order) {
+  async sendOrder(order, jwtToken) {
     const response = await fetch(`${api.hostname}/match/order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`,
       },
       body: JSON.stringify(order),
     });
