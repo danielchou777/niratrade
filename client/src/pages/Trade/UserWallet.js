@@ -84,6 +84,8 @@ function UserWallet(props) {
 
       const result = await api.getWallet(user.userId);
 
+      if (!result) return;
+
       const { balance, stock, userId } = result;
       setBalance(balance);
       setUserStock(stock);

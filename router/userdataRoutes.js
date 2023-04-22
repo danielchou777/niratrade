@@ -6,8 +6,8 @@ import {
 } from '../controllers/userdataControllers.js';
 const router = Router();
 
-router.post('/wallet', wallet);
-router.post('/position', position);
-router.post('/execution', execution);
+router.get('/wallet', wallet);
+router.get('/position', position);
+router.get('/execution', execution);
 
 export default router;

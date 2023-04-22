@@ -2,7 +2,10 @@ const api = {
   //TODO change this to your own hostname
   hostname: 'http://localhost:3000/api/1.0',
 
-  async sendOrder(order, jwtToken) {
+  async sendOrder(order) {
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) return;
+
     const response = await fetch(`${api.hostname}/match/order`, {
       method: 'POST',
       headers: {
@@ -28,24 +31,30 @@ const api = {
     return await response.json();
   },
 
-  async getWallet(userId) {
+  async getWallet() {
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) return;
+
     const response = await fetch(`${api.hostname}/userdata/wallet`, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`,
       },
-      body: JSON.stringify({ userId }),
     });
     return await response.json();
   },
 
   async getPositions(userId) {
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) return;
+
     const response = await fetch(`${api.hostname}/userdata/position`, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`,
       },
-      body: JSON.stringify({ userId }),
     });
     return await response.json();
   },
@@ -56,13 +65,19 @@ const api = {
   },
 
   async getUserExecutions(userId, symbol) {
-    const response = await fetch(`${api.hostname}/userdata/execution`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId, symbol }),
-    });
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) return;
+
+    const response = await fetch(
+      `${api.hostname}/userdata/execution?symbol=${symbol}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      }
+    );
     return await response.json();
   },
 

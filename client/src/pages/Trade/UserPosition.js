@@ -93,6 +93,8 @@ function UserPosition(props) {
       if (!user) return;
       const { result } = await api.getPositions(user.userId);
 
+      if (result.length === 0) return;
+
       setOpenOrders(result);
     })();
   }, [props.refresh, user]);

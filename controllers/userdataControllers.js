@@ -10,7 +10,7 @@ import Error from '../errors/index.js';
 import { StatusCodes } from 'http-status-codes';
 
 export const wallet = async (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req.payload;
   const { balance } = await getBalance(userId);
   const stock = await getStock(userId);
 
@@ -18,13 +18,14 @@ export const wallet = async (req, res) => {
 };
 
 export const position = async (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req.payload;
   const result = await getPosition(userId);
   res.status(StatusCodes.OK).json({ result });
 };
 
 export const execution = async (req, res) => {
-  const { userId, symbol } = req.body;
+  const { symbol } = req.query;
+  const { userId } = req.payload;
 
   if (!userId) throw new Error.BadRequestError('userId is required');
 
