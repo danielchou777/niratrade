@@ -120,6 +120,28 @@ const api = {
     });
     return await response.json();
   },
+
+  async getStockPrices() {
+    const response = await fetch(`${api.hostname}/marketdata/stockprices`);
+    return await response.json();
+  },
+
+  async getAllPositions(symbol, status, side) {
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) return;
+
+    const response = await fetch(
+      `${api.hostname}/userdata/allPosition?symbol=${symbol}&status=${status}&side=${side}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      }
+    );
+    return await response.json();
+  },
 };
 
 export default api;

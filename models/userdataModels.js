@@ -52,3 +52,42 @@ export const getExecution = async (userId, symbol) => {
 
   return rows;
 };
+
+export const getAllPositions = async (userId, symbol, status, side) => {
+  if (symbol === 'All') {
+    symbol = '%';
+  }
+
+  // Update side
+  if (side === 'All') {
+    side = '%';
+  } else if (side === 'Buy') {
+    side = 'b';
+  } else if (side === 'Sell') {
+    side = 's';
+  }
+
+  if (status === 'Open') {
+    const [rows] = await pool.execute(
+      'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND (status = "0" OR status = "1") AND side LIKE ? ORDER BY created_at DESC',
+      [userId, symbol, side]
+    );
+
+    return rows;
+  }
+  // Update status
+  if (status === 'All') {
+    status = '%';
+  } else if (status === 'Closed') {
+    status = '2';
+  }
+
+  const [rows] = await pool.execute(
+    'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND status LIKE ? AND side LIKE ? ORDER BY created_at DESC',
+    [userId, symbol, status, side]
+  );
+
+  console.log(rows);
+
+  return rows;
+};

@@ -217,3 +217,19 @@ export const getMarketDataHistory = async (symbol) => {
 
   return rows;
 };
+
+export const getStockPrices = async () => {
+  const [stocks] = await pool.query('SELECT symbol, name  FROM stock');
+
+  const stockPrices = {};
+
+  for (let i = 0; i < stocks.length; i++) {
+    const symbol = stocks[i].symbol;
+    let execution = await cache.lrange(`executions-${symbol}`, 0, 0);
+    execution = JSON.parse(execution[0]);
+    const stockPrice = execution.stockPrice;
+    stockPrices[symbol] = stockPrice;
+  }
+
+  return stockPrices;
+};

@@ -4,6 +4,7 @@ import {
   getExecutions,
   getStocks,
   getMarketDataHistory,
+  getStockPrices,
 } from '../models/marketdataModels.js';
 
 import { StatusCodes } from 'http-status-codes';
@@ -47,4 +48,10 @@ export const marketChart = async (req, res) => {
   });
 
   res.status(StatusCodes.OK).json({ marketdata });
+};
+
+export const getAllStockPrices = async (req, res) => {
+  let result = await getStockPrices();
+
+  res.status(StatusCodes.OK).json({ data: result });
 };

@@ -89,7 +89,7 @@ function UserPosition(props) {
   const { user } = React.useContext(UserContext);
 
   React.useEffect(() => {
-    (async function fetchWallet() {
+    (async () => {
       if (!user) return;
       const { result } = await api.getPositions(user.userId);
 

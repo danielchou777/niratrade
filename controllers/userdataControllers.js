@@ -3,6 +3,7 @@ import {
   getStock,
   getPosition,
   getExecution,
+  getAllPositions,
 } from '../models/userdataModels.js';
 
 import Error from '../errors/index.js';
@@ -32,5 +33,15 @@ export const execution = async (req, res) => {
   if (!symbol) throw new Error.BadRequestError('symbol is required');
 
   const result = await getExecution(userId, symbol);
+  res.status(StatusCodes.OK).json({ result });
+};
+
+export const allPosition = async (req, res) => {
+  const { userId } = req.payload;
+  const { symbol, status, side } = req.query;
+
+  if (!userId) throw new Error.BadRequestError('userId is required');
+
+  const result = await getAllPositions(userId, symbol, status, side);
   res.status(StatusCodes.OK).json({ result });
 };
