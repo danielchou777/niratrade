@@ -6,8 +6,6 @@ import { UserContext } from '../../store/UserContext';
 const Wrapper = styled.div`
   height: 100%;
   width: 100%;
-  grid-column: 1 / 2;
-  grid-row: 1 / 3;
   color: white;
   padding: 2rem 2rem 0rem 3rem;
   display: flex;

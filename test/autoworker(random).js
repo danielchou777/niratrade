@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const jwtToken =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODIxNTg3MzEsImV4cCI6MTY4MjE2MjMzMX0.gRYkse92C95WQTZQErlxai448oC3hYeE2AzedGuPXZA';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODIzMTQ1NDgsImV4cCI6MTY4MjM1MDU0OH0.KKhd3pMm_ZfeFnYpEf2L4u4c_a7nFgp670swX07aZ1g';
 
 setInterval(async () => {
   const price = 90 + Math.floor(Math.random() * 20);
@@ -25,7 +25,7 @@ setInterval(async () => {
       },
     }
   );
-}, 1000);
+}, 5000);
 
 setInterval(async () => {
   const price = 90 + Math.floor(Math.random() * 20);

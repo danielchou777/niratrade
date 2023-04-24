@@ -12,13 +12,20 @@ import Swal from 'sweetalert2';
 import { UserContext } from '../../store/UserContext';
 
 const Wrapper = styled.div`
-  padding: 60px 20px;
+  margin-top: 20px;
   display: grid;
   flex-direction: column;
   align-items: center;
   text-align: center;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: 70px repeat(1, 1fr); ;
+  grid-template-rows: 70px repeat(1, 1fr);
+  background-color: #131010;
+`;
+
+const LeftWrapper = styled.div`
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
+  margin-bottom: auto;
 `;
 
 const OrderWrapper = styled.div`
@@ -106,7 +113,14 @@ function Trade() {
 
   return (
     <Wrapper>
-      <UserWallet refresh={refresh} setRefresh={setRefresh} />
+      <LeftWrapper>
+        <OrderBooks
+          buyOrderBook={buyOrderBook}
+          sellOrderBook={sellOrderBook}
+          stock={stock}
+        />
+        <UserWallet refresh={refresh} setRefresh={setRefresh} />
+      </LeftWrapper>
 
       <OrderWrapper>
         <StockInfo
@@ -123,11 +137,7 @@ function Trade() {
           stock={stock}
         />
         <MarketChart stock={stock}></MarketChart>
-        <OrderBooks
-          buyOrderBook={buyOrderBook}
-          sellOrderBook={sellOrderBook}
-          stock={stock}
-        />
+
         <UserPosition refresh={refresh} setRefresh={setRefresh} />
       </OrderWrapper>
       <MarketTrades executions={executions} stock={stock} refresh={refresh} />

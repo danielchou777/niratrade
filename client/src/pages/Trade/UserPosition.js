@@ -14,6 +14,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   background-color: #131010;
+  margin-bottom: 1rem;
 `;
 
 const TitleWrapper = styled.div`
@@ -85,7 +86,7 @@ const OpenOrderSide = styled.div`
 `;
 
 function UserPosition(props) {
-  const [openOrders, setOpenOrders] = React.useState(null);
+  const [openOrders, setOpenOrders] = React.useState([]);
   const { user } = React.useContext(UserContext);
 
   React.useEffect(() => {
