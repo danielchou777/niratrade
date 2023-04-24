@@ -149,10 +149,10 @@ const services = [
     name: 'wallet',
     displayText: 'Wallet',
   },
-  {
-    name: 'about',
-    displayText: 'About us',
-  },
+  // {
+  //   name: 'about',
+  //   displayText: 'About us',
+  // },
 ];
 
 function Header() {

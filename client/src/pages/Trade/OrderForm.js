@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Swal from 'sweetalert2';
+import { UserContext } from '../../store/UserContext';
 
 const FormGroup = styled.div`
   width: 100%;
@@ -135,15 +136,21 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
   const [sellQuantity, setSellQuantity] = useState('');
   const [sellPrice, setSellPrice] = useState('');
   const [type, setType] = useState('');
+  const { user } = React.useContext(UserContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     let order;
 
+    if (!user) {
+      Swal.fire('Please login first');
+      return;
+    }
+
     if (type === 'buy' && buyQuantity && buyPrice) {
       order = {
         symbol: `${stock}`,
-        userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
+        userId: user.userId,
         price: buyPrice,
         quantity: buyQuantity,
         type: '2',
@@ -155,7 +162,7 @@ function OrderForm({ onSubmit, socket, refresh, setRefresh, stock }) {
     if (type === 'sell' && sellQuantity && sellPrice) {
       order = {
         symbol: `${stock}`,
-        userId: '44c10eb0-2943-4282-88fc-fa01d1cb6ac0',
+        userId: user.userId,
         price: sellPrice,
         quantity: sellQuantity,
         type: '2',

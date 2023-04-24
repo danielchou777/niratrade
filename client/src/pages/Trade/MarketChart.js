@@ -40,7 +40,14 @@ let ohlc = [],
 
 const sortMarketData = (data) => {
   ohlc = [];
+  volume = [];
   for (let i = 0; i < data.length; i++) {
+    if (data[i][1] <= data[i][4]) {
+      volumeColor = '#55e3b3';
+    } else {
+      volumeColor = '#fa6767';
+    }
+
     ohlc.push([
       data[i][0] * 1000, // the date
       data[i][1], // open
@@ -49,22 +56,16 @@ const sortMarketData = (data) => {
       data[i][4], // close
     ]);
 
-    if (data[i][1] < data[i][4]) {
-      volumeColor = '#55e3b3';
-    } else {
-      volumeColor = '#fa6767';
-    }
-
     volume.push({
       x: data[i][0] * 1000, // the date
       y: data[i][5],
       color: volumeColor,
     });
   }
-  return ohlc;
+  return [ohlc, volume];
 };
 
-const options = (ohlc) => ({
+const options = ([ohlc, volume]) => ({
   rangeSelector: {
     animation: false,
     enabled: true,
@@ -82,7 +83,7 @@ const options = (ohlc) => ({
       },
       {
         type: 'hour',
-        count: 3,
+        count: 'All',
         text: '5m',
         preserveDataGrouping: true,
         dataGrouping: {
@@ -168,6 +169,7 @@ const options = (ohlc) => ({
   ],
 
   xAxis: {
+    minRange: 1,
     type: 'datetime',
     dateTimeLabelFormats: {
       day: '%e %b %Y', // example: 1 Jan 2022
@@ -207,6 +209,7 @@ const options = (ohlc) => ({
   series: [
     {
       type: 'candlestick',
+      minRange: 1,
       name: 'AAPL',
       data: ohlc,
       color: '#fa6767', // Set the color for negative candles (default)
@@ -228,10 +231,12 @@ const options = (ohlc) => ({
 
 const MarketChart = React.memo((props) => {
   const [chartData, setChartData] = React.useState([]);
+  console.log(chartData);
 
   React.useEffect(() => {
     api.getMarketChartData(props.stock).then((res) => {
       const sortedMarketData = sortMarketData(res.marketdata);
+      console.log(sortedMarketData);
       setChartData(sortedMarketData);
     });
   }, [props.stock]);

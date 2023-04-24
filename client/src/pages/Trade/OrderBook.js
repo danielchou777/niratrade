@@ -96,7 +96,11 @@ function OrderBooks(props) {
 
   React.useEffect(() => {
     setBuyOrderBook(props.buyOrderBook);
-    setSellOrderBook(props.sellOrderBook);
+
+    if (!props.sellOrderBook) return;
+
+    const sellOrderBook = props.sellOrderBook.reverse();
+    setSellOrderBook(sellOrderBook);
   }, [props.buyOrderBook, props.sellOrderBook]);
 
   React.useEffect(() => {
@@ -104,8 +108,10 @@ function OrderBooks(props) {
       const { buyOrderBook, sellOrderBook } = await api.getOrderBook(
         `${props.stock}`
       );
+
+      const reverseSellOrderBook = sellOrderBook.reverse();
       setBuyOrderBook(buyOrderBook);
-      setSellOrderBook(sellOrderBook);
+      setSellOrderBook(reverseSellOrderBook);
     })();
   }, [props.stock]);
 
@@ -120,21 +126,20 @@ function OrderBooks(props) {
         </OrderBookHeader>
         {sellOrderBook && (
           <>
-            {sellOrderBook.reverse().map((order, index) => {
-              console.log(index);
-              // if (sellOrderBook.length - index <= 5) {
-              return (
-                <OrderWrapper key={order[0]} type='sell' quantity={order[1]}>
-                  <OrderPrice type='sell'>
-                    {thousandSeparator(order[0])}
-                  </OrderPrice>
-                  <OrderQty>{thousandSeparator(order[1])}</OrderQty>
-                  <SubTotal>
-                    {thousandSeparator(Number(order[0]) * Number(order[1]))}
-                  </SubTotal>
-                </OrderWrapper>
-              );
-              // }
+            {sellOrderBook.map((order, index) => {
+              if (sellOrderBook.length - index <= 5) {
+                return (
+                  <OrderWrapper key={order[0]} type='sell' quantity={order[1]}>
+                    <OrderPrice type='sell'>
+                      {thousandSeparator(order[0])}
+                    </OrderPrice>
+                    <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                    <SubTotal>
+                      {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                    </SubTotal>
+                  </OrderWrapper>
+                );
+              }
             })}
           </>
         )}
@@ -148,19 +153,19 @@ function OrderBooks(props) {
         {buyOrderBook && (
           <>
             {buyOrderBook.map((order, index) => {
-              // if (index < 5) {
-              return (
-                <OrderWrapper key={order[0]} type='buy' quantity={order[1]}>
-                  <OrderPrice type='buy'>
-                    {thousandSeparator(order[0])}
-                  </OrderPrice>
-                  <OrderQty>{thousandSeparator(order[1])}</OrderQty>
-                  <SubTotal>
-                    {thousandSeparator(Number(order[0]) * Number(order[1]))}
-                  </SubTotal>
-                </OrderWrapper>
-              );
-              // }
+              if (index < 5) {
+                return (
+                  <OrderWrapper key={order[0]} type='buy' quantity={order[1]}>
+                    <OrderPrice type='buy'>
+                      {thousandSeparator(order[0])}
+                    </OrderPrice>
+                    <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                    <SubTotal>
+                      {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                    </SubTotal>
+                  </OrderWrapper>
+                );
+              }
             })}
             {/* <Total>Buy: {getTotal(buyOrderBook)}</Total> */}
           </>

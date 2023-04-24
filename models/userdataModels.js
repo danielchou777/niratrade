@@ -27,11 +27,9 @@ export const getPosition = async (userId) => {
 
 export const getExecution = async (userId, symbol) => {
   const [rows] = await pool.execute(
-    'SELECT buy_user_id, sell_user_id, symbol, price, quantity, created_at FROM execution WHERE (buy_user_id = ? OR sell_user_id = ?) AND symbol = ?',
+    'SELECT buy_user_id, sell_user_id, symbol, price, quantity, created_at FROM execution WHERE (buy_user_id = ? OR sell_user_id = ?) AND symbol = ? ORDER BY created_at DESC LIMIT 30',
     [userId, userId, symbol]
   );
-
-  rows.reverse();
 
   rows.map((row) => {
     if (row.buy_user_id === userId) {
@@ -86,8 +84,6 @@ export const getAllPositions = async (userId, symbol, status, side) => {
     'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND status LIKE ? AND side LIKE ? ORDER BY created_at DESC',
     [userId, symbol, status, side]
   );
-
-  console.log(rows);
 
   return rows;
 };

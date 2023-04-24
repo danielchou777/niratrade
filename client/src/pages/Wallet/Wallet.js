@@ -194,6 +194,21 @@ function Wallet() {
   };
 
   React.useEffect(() => {
+    const jwtToken = window.localStorage.getItem('jwtToken');
+    if (!jwtToken) {
+      Swal.fire({
+        title: 'Please Sign In To Unlock',
+        icon: 'warning',
+        showConfirmButton: false,
+        timer: 1500,
+      }).then(() => {
+        window.location.href = './signin';
+      });
+      return;
+    }
+  }, []);
+
+  React.useEffect(() => {
     (async () => {
       if (!user) return;
 

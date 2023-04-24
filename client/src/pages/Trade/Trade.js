@@ -62,7 +62,6 @@ function Trade() {
   }, []);
 
   React.useEffect(() => {
-    console.log(socket);
     if (!socket) return;
 
     function handleMarketTrade(data) {
@@ -94,7 +93,7 @@ function Trade() {
         socket.off(`user-${user.userId}`);
       }
     };
-  }, [refreshSocket]);
+  }, [refreshSocket, stock, user]);
 
   React.useEffect(() => {
     (async function fetchExecutions() {

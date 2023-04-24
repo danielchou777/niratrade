@@ -93,7 +93,6 @@ export const signin = async (req, res) => {
 
 export const userProfile = async (req, res) => {
   const { userId, name, email } = req.payload;
-  console.log(userId, name, email);
   res.status(StatusCodes.OK).json({
     data: {
       userId,

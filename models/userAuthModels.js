@@ -10,7 +10,7 @@ export const getUserByEmail = async (email) => {
 export const createUser = async (userId, name, email, password) => {
   // insert user
   await pool.query(
-    `INSERT INTO user (user_id, name, email, password, balance, locked_balance) VALUES (?, ?, ?, ?, 0, 0)`,
+    `INSERT INTO user (user_id, name, email, password, balance, locked_balance) VALUES (?, ?, ?, ?, 10000, 0)`,
     [userId, name, email, password]
   );
 

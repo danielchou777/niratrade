@@ -79,8 +79,6 @@ const SearchBarOption = styled.option`
   cursor: pointer;
 `;
 
-const SearchBarIcon = styled.div``;
-
 function StockInfo(props) {
   // const [stockInfo, setStockInfo] = useState('');
   const [stockPrice, setStockPrice] = useState('');

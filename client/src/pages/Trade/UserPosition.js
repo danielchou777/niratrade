@@ -92,6 +92,7 @@ function UserPosition(props) {
   React.useEffect(() => {
     (async () => {
       if (!user) return;
+      console.log(user);
       const { result } = await api.getPositions(user.userId);
 
       if (result.length === 0) return;
