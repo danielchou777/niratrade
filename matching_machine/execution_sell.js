@@ -19,7 +19,11 @@ const updateUserTables = async (
   await Promise.all([
     updateUserBalance(sellUserId, buyOrderPrice * sellOrderAmount),
     updateUserStock(sellUserId, symbol, -sellOrderAmount),
-    updateUserBalance(buyUserId, -buyOrderPrice * sellOrderAmount),
+    updateUserBalance(
+      buyUserId,
+      -buyOrderPrice * sellOrderAmount,
+      -buyOrderPrice * sellOrderAmount
+    ),
     updateUserStock(buyUserId, symbol, sellOrderAmount),
   ]);
 };

@@ -1,14 +1,15 @@
 import axios from 'axios';
+import https from 'https';
 
 const jwtToken =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODIzMTQ1NDgsImV4cCI6MTY4MjM1MDU0OH0.KKhd3pMm_ZfeFnYpEf2L4u4c_a7nFgp670swX07aZ1g';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODIzNDEwNTIsImV4cCI6MTY4MjcwMTA1Mn0.XgOU4AMejSPKcF0ZqJjjDcGSPs0tQHUHoJQjlNgucRc';
 
 const randomOrder1 = async () => {
   const price = 80 + Math.floor(Math.random() * 40);
   const quantity = 5 + Math.floor(Math.random() * 10);
 
   await axios.post(
-    'http://localhost:3000/api/1.0/match/order',
+    'https://www.danielchou.online/api/1.0/match/order',
     {
       symbol: 'DAN',
       userId: '728bd78e-8833-44bb-8488-917b70af4773',
@@ -23,11 +24,14 @@ const randomOrder1 = async () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwtToken}`,
       },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     }
   );
-  const rand = Math.floor(Math.random() * 2 + 5);
+  const rand = Math.floor(Math.random() * 5 + 10);
 
-  setTimeout(randomOrder1, rand * 1000);
+  setTimeout(randomOrder1, rand * 10);
 };
 
 const randomOrder2 = async () => {
@@ -35,7 +39,7 @@ const randomOrder2 = async () => {
   const quantity = 5 + Math.floor(Math.random() * 10);
 
   await axios.post(
-    'http://localhost:3000/api/1.0/match/order',
+    'https://www.danielchou.online/api/1.0/match/order',
     {
       header: {
         Authorization: `Bearer ${jwtToken}`,
@@ -53,12 +57,15 @@ const randomOrder2 = async () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwtToken}`,
       },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     }
   );
 
-  const rand = Math.floor(Math.random() * 2 + 5);
+  const rand = Math.floor(Math.random() * 5 + 10);
 
-  setTimeout(randomOrder2, rand * 1000);
+  setTimeout(randomOrder2, rand * 10);
 };
 
 const randomOrder3 = async () => {
@@ -66,7 +73,7 @@ const randomOrder3 = async () => {
   const quantity = 5 + Math.floor(Math.random() * 10);
 
   await axios.post(
-    'http://localhost:3000/api/1.0/match/order',
+    'https://www.danielchou.online/api/1.0/match/order',
     {
       header: {
         Authorization: `Bearer ${jwtToken}`,
@@ -84,12 +91,15 @@ const randomOrder3 = async () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwtToken}`,
       },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     }
   );
 
-  const rand = Math.floor(Math.random() * 2 + 5);
+  const rand = Math.floor(Math.random() * 5 + 10);
 
-  setTimeout(randomOrder3, rand * 1000);
+  setTimeout(randomOrder3, rand * 10);
 };
 
 const randomOrder4 = async () => {
@@ -97,7 +107,7 @@ const randomOrder4 = async () => {
   const quantity = 5 + Math.floor(Math.random() * 10);
 
   await axios.post(
-    'http://localhost:3000/api/1.0/match/order',
+    'https://www.danielchou.online/api/1.0/match/order',
     {
       header: {
         Authorization: `Bearer ${jwtToken}`,
@@ -115,12 +125,15 @@ const randomOrder4 = async () => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwtToken}`,
       },
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+      }),
     }
   );
 
-  const rand = Math.floor(Math.random() * 2 + 5);
+  const rand = Math.floor(Math.random() * 5 + 10);
 
-  setTimeout(randomOrder4, rand * 1000);
+  setTimeout(randomOrder4, rand * 10);
 };
 
 randomOrder1();

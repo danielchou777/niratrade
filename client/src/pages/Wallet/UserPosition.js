@@ -197,8 +197,6 @@ function UserPosition(props) {
   };
 
   const handleSearch = async () => {
-    console.log('search');
-    console.log(selectedSymbol, selectedStatus, selectedSide);
     if (!user) return;
     const { result } = await api.getAllPositions(
       selectedSymbol,
@@ -208,7 +206,7 @@ function UserPosition(props) {
 
     if (result.length === 0) {
       Swal.fire({
-        icon: 'Info',
+        icon: 'info',
         title: 'Oops...',
         text: 'No result found',
       });

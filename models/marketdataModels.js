@@ -1,4 +1,3 @@
-import { symbol } from 'd3';
 import cache from '../utils/cache.js';
 import pool from '../utils/database.js';
 
@@ -232,4 +231,13 @@ export const getStockPrices = async () => {
   }
 
   return stockPrices;
+};
+
+export const getUnfilledQuantity = async (orderId) => {
+  const [rows] = await pool.execute(
+    'SELECT unfilled_quantity FROM orders WHERE order_id=?',
+    [orderId]
+  );
+
+  return rows[0].unfilled_quantity;
 };

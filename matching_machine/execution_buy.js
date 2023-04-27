@@ -14,12 +14,17 @@ const updateUserTables = async (
   sellUserId,
   symbol,
   buyOrderAmount,
-  sellOrderPrice
+  sellOrderPrice,
+  buyOrderPrice
 ) => {
   await Promise.all([
     updateUserBalance(sellUserId, sellOrderPrice * buyOrderAmount),
     updateUserStock(sellUserId, symbol, -buyOrderAmount),
-    updateUserBalance(buyUserId, -sellOrderPrice * buyOrderAmount),
+    updateUserBalance(
+      buyUserId,
+      -sellOrderPrice * buyOrderAmount,
+      -buyOrderPrice * buyOrderAmount
+    ),
     updateUserStock(buyUserId, symbol, buyOrderAmount),
   ]);
 };
@@ -109,7 +114,8 @@ const buyExecution = async (
         sellUserId,
         symbol,
         buyOrderAmount,
-        sellOrderPrice
+        sellOrderPrice,
+        stockPrice
       );
 
       pushExecutions(
@@ -151,7 +157,8 @@ const buyExecution = async (
         sellUserId,
         symbol,
         buyOrderAmount,
-        sellOrderPrice
+        sellOrderPrice,
+        stockPrice
       );
 
       pushExecutions(
@@ -197,7 +204,8 @@ const buyExecution = async (
         sellUserId,
         symbol,
         sellOrderAmount,
-        sellOrderPrice
+        sellOrderPrice,
+        stockPrice
       );
 
       pushExecutions(

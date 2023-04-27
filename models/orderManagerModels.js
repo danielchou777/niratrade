@@ -39,6 +39,15 @@ export const updateOrder = async (orderId, status, unfilledQauntity) => {
   return rows;
 };
 
+export const updateCancelOrder = async (orderId, status) => {
+  const [rows] = await pool.execute(
+    'UPDATE orders SET status=? WHERE order_id=?',
+    [status, orderId]
+  );
+
+  return rows;
+};
+
 export const updateUserStock = async (userId, symbol, quantity) => {
   if (quantity < 0) {
     await pool.execute(
@@ -53,11 +62,11 @@ export const updateUserStock = async (userId, symbol, quantity) => {
   }
 };
 
-export const updateUserBalance = async (userId, balance) => {
+export const updateUserBalance = async (userId, balance, locked_balance) => {
   if (balance < 0) {
     await pool.execute(
       'UPDATE user SET balance = balance + ?, locked_balance = locked_balance + ? WHERE user_id=?',
-      [balance, balance, userId]
+      [balance, locked_balance, userId]
     );
   } else {
     await pool.execute(
@@ -123,6 +132,32 @@ export const setUserLockedBalance = async (userId, balance) => {
 };
 
 export const setUserLockedStock = async (userId, symbol, quantity) => {
+  const [rows] = await pool.execute(
+    'UPDATE user_stock SET locked_quantity = locked_quantity + ? WHERE user_id=? AND symbol=?',
+    [quantity, userId, symbol]
+  );
+
+  return rows;
+};
+
+export const getCancelOrderInfo = async (orderId) => {
+  const [rows] = await pool.execute('SELECT * FROM orders WHERE order_id=?', [
+    orderId,
+  ]);
+
+  return rows[0];
+};
+
+export const updateUserLockedBalance = async (userId, balance) => {
+  const [rows] = await pool.execute(
+    'UPDATE user SET locked_balance = locked_balance + ? WHERE user_id=?',
+    [balance, userId]
+  );
+
+  return rows;
+};
+
+export const updateUserLockedStock = async (userId, symbol, quantity) => {
   const [rows] = await pool.execute(
     'UPDATE user_stock SET locked_quantity = locked_quantity + ? WHERE user_id=? AND symbol=?',
     [quantity, userId, symbol]

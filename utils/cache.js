@@ -1,4 +1,6 @@
 import Redis from 'ioredis';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const cache =
   process.env.CACHE_ENV === 'production'

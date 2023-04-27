@@ -92,10 +92,8 @@ function UserPosition(props) {
   React.useEffect(() => {
     (async () => {
       if (!user) return;
-      console.log(user);
       const { result } = await api.getPositions(user.userId);
-
-      if (result.length === 0) return;
+      console.log(result);
 
       setOpenOrders(result);
     })();
@@ -124,6 +122,7 @@ function UserPosition(props) {
       </PositionHeaders>
       {openOrders &&
         openOrders.map((order) => {
+          console.log(order);
           const {
             symbol,
             side,

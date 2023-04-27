@@ -7,6 +7,7 @@ import { UserContext } from './store/UserContext';
 import Header from './components/Header';
 import socketIOClient from 'socket.io-client';
 //TODO change to your own endpoint
+// const ENDPOINT = 'https://www.danielchou.online';
 const ENDPOINT = 'http://localhost:3000';
 
 const GlobalStyle = createGlobalStyle`

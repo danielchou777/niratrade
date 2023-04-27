@@ -10,10 +10,7 @@ let io;
 export const createSocketServer = (server) => {
   io = new Server(server, {
     cors: {
-      origin: 'http://localhost:3001',
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['my-custom-header'],
-      credentials: true,
+      origin: '*',
     },
   });
   io.on('connection', (socket) => {
@@ -33,6 +30,7 @@ export const createSocketServer = (server) => {
       const users = [...new Set(data.map((item) => item))]; // [ 'A', 'B']
 
       for (let i = 0; i < users.length; i++) {
+        console.log(`user-${users[i]}`);
         io.emit(`user-${users[i]}`, { data: 'updated' });
       }
     });

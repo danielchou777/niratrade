@@ -8,6 +8,7 @@ import {
   checkUserStock,
   setUserLockedBalance,
   setUserLockedStock,
+  getCancelOrderInfo,
 } from '../models/orderManagerModels.js';
 
 const clientId = 'my-app';
@@ -20,11 +21,54 @@ await producer.connect();
 
 const server = net.createServer(async function (socket) {
   socket.on('data', async function (data) {
-    let { symbol, userId, price, quantity, type, side, status } =
+    let { symbol, userId, price, quantity, type, side, status, orderIdCancel } =
       JSON.parse(data);
 
     price = Number(price);
     quantity = Number(quantity);
+
+    if (orderIdCancel && status !== '4') {
+      socket.write('Invalid cancel order');
+      return;
+    }
+
+    // implement cancel order
+    if (orderIdCancel && status === '4') {
+      console.log('cancel order: ', orderIdCancel);
+
+      const cancelOrderInfo = await getCancelOrderInfo(orderIdCancel);
+
+      // check if cancel order matches the original order
+      if (
+        cancelOrderInfo.side !== side ||
+        cancelOrderInfo.user_id !== userId ||
+        cancelOrderInfo.price !== price ||
+        cancelOrderInfo.quantity !== quantity ||
+        cancelOrderInfo.type !== type
+      ) {
+        socket.write('Invalid cancel order');
+        return;
+      }
+
+      console.log('success cancel order: ', orderIdCancel);
+      socket.write('receive cancel order: ' + orderIdCancel);
+
+      const data = {
+        stockAmount: `c:${side}:${quantity}:${orderIdCancel}:${userId}:${symbol}:${price}`,
+      };
+
+      await producer.send({
+        topic: `stock-${symbol}`,
+        messages: [
+          {
+            key: 'CancelOrder',
+            value: JSON.stringify(data),
+          },
+        ],
+      });
+
+      return;
+    }
 
     const orderId = uuidv4();
 

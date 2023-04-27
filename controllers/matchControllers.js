@@ -3,7 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import Error from '../errors/index.js';
 
 export const order = (req, res, next) => {
-  const { symbol, userId, price, quantity, type, side, status } = req.body;
+  const { symbol, userId, price, quantity, type, side, status, orderIdCancel } =
+    req.body;
+
   if (!symbol || !userId || !price || !quantity || !type || !side || !status) {
     throw new Error.BadRequestError('data is not complete');
   }

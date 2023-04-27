@@ -42,7 +42,7 @@ const sortMarketData = (data) => {
   ohlc = [];
   volume = [];
   for (let i = 0; i < data.length; i++) {
-    if (data[i][1] <= data[i][4]) {
+    if (data[i][1] < data[i][4]) {
       volumeColor = '#55e3b3';
     } else {
       volumeColor = '#fa6767';
@@ -65,15 +65,16 @@ const sortMarketData = (data) => {
   return [ohlc, volume];
 };
 
-const options = ([ohlc, volume]) => ({
+const options = ([ohlc, volume], stock) => ({
   rangeSelector: {
     animation: false,
     enabled: true,
-    selected: 6,
+    selected: 10,
+    dropdown: 'responsive',
     buttons: [
       {
         type: 'hour',
-        count: 1,
+        // count: 1,
         text: '1m',
         preserveDataGrouping: true,
         dataGrouping: {
@@ -83,7 +84,7 @@ const options = ([ohlc, volume]) => ({
       },
       {
         type: 'hour',
-        count: 'All',
+        // count: 3,
         text: '5m',
         preserveDataGrouping: true,
         dataGrouping: {
@@ -93,7 +94,7 @@ const options = ([ohlc, volume]) => ({
       },
       {
         type: 'hour',
-        count: 'All',
+        // count: 6,
         text: '10m',
         preserveDataGrouping: true,
         dataGrouping: {
@@ -103,7 +104,7 @@ const options = ([ohlc, volume]) => ({
       },
       {
         type: 'hour',
-        count: 'All',
+        // count: 12,
         text: '30m',
         preserveDataGrouping: true,
         dataGrouping: {
@@ -177,6 +178,18 @@ const options = ([ohlc, volume]) => ({
       month: '%b %Y', // example: Jan 2022
       year: '%Y', // example: 2022
     },
+
+    events: {
+      afterSetExtremes: function (e) {
+        if (!e.trigger) {
+          // Set the initial range when the chart is first loaded
+          const chart = this.chart;
+          const range = chart.xAxis[0].getExtremes();
+          const defaultRange = 4 * 3600 * 1000; //
+          chart.xAxis[0].setExtremes(range.max - defaultRange, range.max);
+        }
+      },
+    },
   },
 
   scrollbar: {
@@ -210,7 +223,7 @@ const options = ([ohlc, volume]) => ({
     {
       type: 'candlestick',
       minRange: 1,
-      name: 'AAPL',
+      name: stock,
       data: ohlc,
       color: '#fa6767', // Set the color for negative candles (default)
       upColor: '#55e3b3', // Set the color for positive candles
@@ -231,12 +244,10 @@ const options = ([ohlc, volume]) => ({
 
 const MarketChart = React.memo((props) => {
   const [chartData, setChartData] = React.useState([]);
-  console.log(chartData);
 
   React.useEffect(() => {
     api.getMarketChartData(props.stock).then((res) => {
       const sortedMarketData = sortMarketData(res.marketdata);
-      console.log(sortedMarketData);
       setChartData(sortedMarketData);
     });
   }, [props.stock]);
@@ -246,7 +257,7 @@ const MarketChart = React.memo((props) => {
       <HighchartsReact
         isPureConfig={false}
         highcharts={Highcharts}
-        options={options(chartData)}
+        options={options(chartData, props.stock)}
         theme={darkUnica}
       />
     </MarketChartWrapper>

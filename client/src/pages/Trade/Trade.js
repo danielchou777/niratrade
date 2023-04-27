@@ -74,7 +74,9 @@ function Trade() {
       setSellOrderBook(data.sellOrderBook);
     }
 
-    function handleUserOrder() {
+    function handleUserOrder(data) {
+      console.log(data);
+      console.log(refresh);
       setRefresh((prevRefresh) => prevRefresh + 1);
     }
 
@@ -82,6 +84,7 @@ function Trade() {
     socket.on(`orderBook-${stock}`, handleOrderBook);
 
     if (user) {
+      console.log(`user-${user.userId}`);
       socket.on(`user-${user.userId}`, handleUserOrder);
     }
 
