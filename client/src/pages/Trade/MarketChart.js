@@ -2,7 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
+import HC_more from 'highcharts/highcharts-more'; //module
 import darkUnica from 'highcharts/themes/dark-unica'; // Import the dark-unica theme
+import { UserContext } from '../../store/UserContext';
+
 // import { data } from './data.js';
 import api from '../../utils/api';
 
@@ -14,6 +17,7 @@ const MarketChartWrapper = styled.div`
 `;
 
 darkUnica(Highcharts);
+HC_more(Highcharts);
 
 let volumeColor = '';
 
@@ -24,12 +28,12 @@ let ohlc = [],
     forced: true,
     enabled: true,
     units: [
-      [
-        'millisecond', // unit name
-        [1, 2, 5, 10, 20, 25, 50, 100, 200, 500], // allowed multiples
-      ],
-      ['second', [1, 2, 5, 10, 15, 30]],
-      ['minute', [1, 5, 10, 15, 30]],
+      // [
+      //   'millisecond', // unit name
+      //   [1, 2, 5, 10, 20, 25, 50, 100, 200, 500], // allowed multiples
+      // ],
+      // ['second', [1, 2, 5, 10, 15, 30]],
+      ['minute', [1]],
       ['hour', [1, 3, 6, 12]],
       ['day', [1]],
       ['week', [1]],
@@ -41,6 +45,7 @@ let ohlc = [],
 const sortMarketData = (data) => {
   ohlc = [];
   volume = [];
+  if (!data) return;
   for (let i = 0; i < data.length; i++) {
     if (data[i][1] < data[i][4]) {
       volumeColor = '#55e3b3';
@@ -65,199 +70,249 @@ const sortMarketData = (data) => {
   return [ohlc, volume];
 };
 
-const options = ([ohlc, volume], stock) => ({
-  rangeSelector: {
-    animation: false,
-    enabled: true,
-    selected: 10,
-    dropdown: 'responsive',
-    buttons: [
+const options = ([ohlc, volume], stock, socket) => {
+  if (!ohlc || !volume) return;
+  return {
+    rangeSelector: {
+      animation: false,
+      enabled: true,
+      dropdown: 'responsive',
+      buttons: [
+        {
+          type: 'hour',
+          count: 1,
+          text: '1m',
+          preserveDataGrouping: true,
+          dataGrouping: {
+            forced: true,
+            units: [['minute', [1]]],
+          },
+        },
+        {
+          type: 'hour',
+          count: 3,
+          text: '5m',
+          preserveDataGrouping: true,
+          dataGrouping: {
+            forced: true,
+            units: [['minute', [5]]],
+          },
+        },
+        {
+          type: 'hour',
+          count: 6,
+          text: '10m',
+          preserveDataGrouping: true,
+          dataGrouping: {
+            forced: true,
+            units: [['minute', [10]]],
+          },
+        },
+        {
+          type: 'hour',
+          count: 12,
+          text: '30m',
+          preserveDataGrouping: true,
+          dataGrouping: {
+            forced: true,
+            units: [['minute', [30]]],
+          },
+        },
+        {
+          type: 'day',
+          count: 2,
+          text: '1hr',
+          preserveDataGrouping: true,
+          dataGrouping: {
+            forced: true,
+            units: [['hour', [1]]],
+          },
+        },
+        {
+          type: 'week',
+          count: 'All',
+          text: 'all',
+          preserveDataGrouping: true,
+          dataGrouping: {
+            forced: true,
+            units: [['day', [1]]],
+          },
+        },
+      ],
+      selected: 0,
+    },
+
+    time: {
+      timezoneOffset: -8 * 60,
+    },
+
+    yAxis: [
       {
-        type: 'hour',
-        // count: 1,
-        text: '1m',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['minute', [1]]],
+        labels: {
+          align: 'right',
+          x: -3,
+        },
+        title: {
+          text: null,
+        },
+        height: '60%',
+        lineWidth: 2,
+        resize: {
+          enabled: true,
         },
       },
       {
-        type: 'hour',
-        // count: 3,
-        text: '5m',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['minute', [5]]],
+        labels: {
+          align: 'right',
+          x: -3,
         },
-      },
-      {
-        type: 'hour',
-        // count: 6,
-        text: '10m',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['minute', [10]]],
+        title: {
+          text: null,
         },
-      },
-      {
-        type: 'hour',
-        // count: 12,
-        text: '30m',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['minute', [30]]],
-        },
-      },
-      {
-        type: 'day',
-        count: 'All',
-        text: '1hr',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['hour', [1]]],
-        },
-      },
-      {
-        type: 'week',
-        count: 'All',
-        text: 'all',
-        preserveDataGrouping: true,
-        dataGrouping: {
-          forced: true,
-          units: [['day', [1]]],
-        },
+        top: '65%',
+        height: '35%',
+        offset: 0,
+        lineWidth: 2,
       },
     ],
-  },
 
-  time: {
-    timezoneOffset: -8 * 60,
-  },
-
-  yAxis: [
-    {
-      labels: {
-        align: 'right',
-        x: -3,
-      },
-      title: {
-        text: null,
-      },
-      height: '60%',
-      lineWidth: 2,
-      resize: {
-        enabled: true,
-      },
-    },
-    {
-      labels: {
-        align: 'right',
-        x: -3,
-      },
-      title: {
-        text: null,
-      },
-      top: '65%',
-      height: '35%',
-      offset: 0,
-      lineWidth: 2,
-    },
-  ],
-
-  xAxis: {
-    minRange: 1,
-    type: 'datetime',
-    dateTimeLabelFormats: {
-      day: '%e %b %Y', // example: 1 Jan 2022
-      week: '%e %b %Y', // example: 1 Jan 2022
-      month: '%b %Y', // example: Jan 2022
-      year: '%Y', // example: 2022
-    },
-
-    events: {
-      afterSetExtremes: function (e) {
-        if (!e.trigger) {
-          // Set the initial range when the chart is first loaded
-          const chart = this.chart;
-          const range = chart.xAxis[0].getExtremes();
-          const defaultRange = 4 * 3600 * 1000; //
-          chart.xAxis[0].setExtremes(range.max - defaultRange, range.max);
-        }
-      },
-    },
-  },
-
-  scrollbar: {
-    enabled: true,
-  },
-
-  tooltip: {
-    split: true,
-  },
-
-  title: {
-    text: null, // Set to null to remove the chart title
-  },
-
-  legend: {
-    enabled: false, // Set to false to remove the legend items
-  },
-
-  chart: {
-    backgroundColor: '#131010', // Set the desired background color here
-  },
-
-  plotOptions: {
-    series: {
-      enableMouseTracking: true,
-      animation: false,
-    },
-  },
-
-  series: [
-    {
-      type: 'candlestick',
+    xAxis: {
       minRange: 1,
-      name: stock,
-      data: ohlc,
-      color: '#fa6767', // Set the color for negative candles (default)
-      upColor: '#55e3b3', // Set the color for positive candles
-      lineColor: '#fa6767', // Set the color for the candlestick line
-      upLineColor: '#55e3b3', // Set the color for the candlestick line
-      dataGrouping: groupingUnits,
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        day: '%e %b %Y', // example: 1 Jan 2022
+        week: '%e %b %Y', // example: 1 Jan 2022
+        month: '%b %Y', // example: Jan 2022
+        year: '%Y', // example: 2022
+      },
     },
-    {
-      type: 'column',
-      name: 'Volume',
-      data: volume,
-      yAxis: 1,
-      borderWidth: 0,
-      dataGrouping: groupingUnits,
+
+    scrollbar: {
+      enabled: true,
     },
-  ],
-});
+
+    tooltip: {
+      split: true,
+    },
+
+    title: {
+      text: null, // Set to null to remove the chart title
+    },
+
+    legend: {
+      enabled: false, // Set to false to remove the legend items
+    },
+
+    plotOptions: {
+      series: {
+        enableMouseTracking: true,
+        animation: false,
+      },
+    },
+
+    series: [
+      {
+        type: 'candlestick',
+        minRange: 1,
+        name: stock,
+        data: ohlc,
+        color: '#fa6767', // Set the color for negative candles (default)
+        upColor: '#55e3b3', // Set the color for positive candles
+        lineColor: '#fa6767', // Set the color for the candlestick line
+        upLineColor: '#55e3b3', // Set the color for the candlestick line
+        dataGrouping: groupingUnits,
+      },
+      {
+        type: 'column',
+        name: 'Volume',
+        data: volume,
+        yAxis: 1,
+        borderWidth: 0,
+        dataGrouping: groupingUnits,
+      },
+    ],
+
+    chart: {
+      backgroundColor: '#131010', // Set the desired background color here
+      animation: false,
+      events: {
+        load: function (e) {
+          const candlestickSeries = this.series[0];
+          const volumeSeries = this.series[1];
+          if (!socket) return;
+
+          socket.on(`marketChart-${stock}`, (d) => {
+            const date = d.chartData.unix_timestamp * 1000;
+            const data = [
+              date,
+              d.chartData.open,
+              d.chartData.high,
+              d.chartData.low,
+              d.chartData.close,
+            ];
+            const updatedVolume = d.chartData.volume;
+
+            const volumeColor =
+              d.chartData.close > d.chartData.open ? '#55e3b3' : '#fa6767';
+
+            const volumeData = {
+              x: date,
+              y: updatedVolume,
+              color: volumeColor,
+            };
+
+            if (ohlc[ohlc.length - 1][0] === date) {
+              ohlc[ohlc.length - 1] = data;
+              volume[volume.length - 1] = volumeData;
+
+              console.log(volume);
+
+              candlestickSeries.update({
+                data: ohlc,
+              });
+              volumeSeries.update({
+                data: volume,
+              });
+            } else {
+              // ohlc.push(data);
+              // volume.push(volumeData);
+
+              candlestickSeries.addPoint(data);
+              volumeSeries.addPoint(volumeData);
+            }
+          });
+        },
+      },
+    },
+  };
+};
 
 const MarketChart = React.memo((props) => {
+  const { socket } = React.useContext(UserContext);
   const [chartData, setChartData] = React.useState([]);
+  const chartRef = React.useRef(null);
 
   React.useEffect(() => {
     api.getMarketChartData(props.stock).then((res) => {
       const sortedMarketData = sortMarketData(res.marketdata);
       setChartData(sortedMarketData);
     });
+
+    return () => {
+      if (socket) {
+        socket.off(`marketChart-${props.stock}`);
+      }
+    };
   }, [props.stock]);
 
   return (
     <MarketChartWrapper>
       <HighchartsReact
+        constructorType={'stockChart'}
+        ref={chartRef}
         isPureConfig={false}
         highcharts={Highcharts}
-        options={options(chartData, props.stock)}
+        options={options(chartData, props.stock, socket)}
         theme={darkUnica}
       />
     </MarketChartWrapper>

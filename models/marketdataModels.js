@@ -209,10 +209,13 @@ export const moveRowToTodayHistory = async (symbol, time) => {
 };
 
 export const getMarketDataHistory = async (symbol) => {
-  const [rows] = await pool.query(
+  let [rows] = await pool.query(
     'SELECT * FROM market_data_today WHERE symbol = ?',
     [symbol]
   );
+
+  const latestMarketData = await getLastestChartData(symbol);
+  rows.push(latestMarketData);
 
   return rows;
 };
@@ -240,4 +243,12 @@ export const getUnfilledQuantity = async (orderId) => {
   );
 
   return rows[0].unfilled_quantity;
+};
+
+export const getLastestChartData = async (symbol) => {
+  const [rows] = await pool.query(
+    'SELECT * FROM market_data WHERE symbol = ? ORDER BY unix_timestamp DESC LIMIT 1 OFFSET 1',
+    [symbol]
+  );
+  return rows[0];
 };

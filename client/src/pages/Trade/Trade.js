@@ -45,6 +45,7 @@ function Trade() {
   const { user, refreshSocket, socket } = React.useContext(UserContext);
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
+  const [latestMarketdata, setLatestMarketdata] = React.useState(null);
 
   React.useEffect(() => {
     const jwtToken = window.localStorage.getItem('jwtToken');
@@ -75,16 +76,18 @@ function Trade() {
     }
 
     function handleUserOrder(data) {
-      console.log(data);
-      console.log(refresh);
       setRefresh((prevRefresh) => prevRefresh + 1);
+    }
+
+    function handleLatestMarketData(data) {
+      setLatestMarketdata(data);
     }
 
     socket.on(`marketTrade-${stock}`, handleMarketTrade);
     socket.on(`orderBook-${stock}`, handleOrderBook);
+    // socket.on(`marketChart-${stock}`, handleLatestMarketData);
 
     if (user) {
-      console.log(`user-${user.userId}`);
       socket.on(`user-${user.userId}`, handleUserOrder);
     }
 
@@ -138,7 +141,10 @@ function Trade() {
           setRefresh={setRefresh}
           stock={stock}
         />
-        <MarketChart stock={stock}></MarketChart>
+        <MarketChart
+          stock={stock}
+          latestMarketdata={latestMarketdata}
+        ></MarketChart>
 
         <UserPosition refresh={refresh} setRefresh={setRefresh} />
       </OrderWrapper>

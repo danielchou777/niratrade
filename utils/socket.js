@@ -3,6 +3,7 @@ import {
   getBuyOrderBook,
   getSellOrderBook,
   getExecutions,
+  getLastestChartData,
 } from '../models/marketdataModels.js';
 
 let io;
@@ -20,17 +21,19 @@ export const createSocketServer = (server) => {
       const buyOrderBook = await getBuyOrderBook(data);
       const sellOrderBook = await getSellOrderBook(data);
       const executions = await getExecutions(data);
+      const chartData = await getLastestChartData(data);
 
       io.emit(`orderBook-${data}`, { buyOrderBook, sellOrderBook });
 
       io.emit(`marketTrade-${data}`, { executions });
+
+      io.emit(`marketChart-${data}`, { chartData });
     });
 
     socket.on('users', async (data) => {
       const users = [...new Set(data.map((item) => item))]; // [ 'A', 'B']
 
       for (let i = 0; i < users.length; i++) {
-        console.log(`user-${users[i]}`);
         io.emit(`user-${users[i]}`, { data: 'updated' });
       }
     });

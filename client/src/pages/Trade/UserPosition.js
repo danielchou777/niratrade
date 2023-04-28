@@ -93,7 +93,6 @@ function UserPosition(props) {
     (async () => {
       if (!user) return;
       const { result } = await api.getPositions(user.userId);
-      console.log(result);
 
       setOpenOrders(result);
     })();
@@ -122,7 +121,6 @@ function UserPosition(props) {
       </PositionHeaders>
       {openOrders &&
         openOrders.map((order) => {
-          console.log(order);
           const {
             symbol,
             side,
