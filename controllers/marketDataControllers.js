@@ -4,6 +4,7 @@ import {
   getExecutions,
   getStocks,
   getMarketDataHistory,
+  getMarketDataDynamicHistory,
   getStockPrices,
 } from '../models/marketdataModels.js';
 
@@ -32,7 +33,24 @@ export const stocks = async (req, res) => {
 };
 
 export const marketChart = async (req, res) => {
-  const { symbol } = req.query;
+  const { symbol, time } = req.query;
+
+  if (time) {
+    let result = await getMarketDataDynamicHistory(symbol, time);
+
+    const marketdata = result.map((data) => {
+      return [
+        data.unix_timestamp,
+        data.open,
+        data.high,
+        data.low,
+        data.close,
+        data.volume,
+      ];
+    });
+    res.status(StatusCodes.OK).json({ marketdata });
+    return;
+  }
 
   let result = await getMarketDataHistory(symbol);
 

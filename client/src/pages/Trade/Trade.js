@@ -66,26 +66,24 @@ function Trade() {
     if (!socket) return;
 
     function handleMarketTrade(data) {
+      if (!data.executions) return;
       setExecutions(data.executions);
       setStockInfo(data.executions[0]);
     }
 
     function handleOrderBook(data) {
+      if (!data.buyOrderBook || !data.sellOrderBook) return;
       setBuyOrderBook(data.buyOrderBook);
       setSellOrderBook(data.sellOrderBook);
     }
 
     function handleUserOrder(data) {
+      if (!data) return;
       setRefresh((prevRefresh) => prevRefresh + 1);
-    }
-
-    function handleLatestMarketData(data) {
-      setLatestMarketdata(data);
     }
 
     socket.on(`marketTrade-${stock}`, handleMarketTrade);
     socket.on(`orderBook-${stock}`, handleOrderBook);
-    // socket.on(`marketChart-${stock}`, handleLatestMarketData);
 
     if (user) {
       socket.on(`user-${user.userId}`, handleUserOrder);
@@ -141,10 +139,7 @@ function Trade() {
           setRefresh={setRefresh}
           stock={stock}
         />
-        <MarketChart
-          stock={stock}
-          latestMarketdata={latestMarketdata}
-        ></MarketChart>
+        <MarketChart stock={stock}></MarketChart>
 
         <UserPosition refresh={refresh} setRefresh={setRefresh} />
       </OrderWrapper>

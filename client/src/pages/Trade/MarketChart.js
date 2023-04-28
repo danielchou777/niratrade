@@ -16,9 +16,6 @@ const MarketChartWrapper = styled.div`
   color: white;
 `;
 
-darkUnica(Highcharts);
-HC_more(Highcharts);
-
 let volumeColor = '';
 
 let ohlc = [],
@@ -47,11 +44,7 @@ const sortMarketData = (data) => {
   volume = [];
   if (!data) return;
   for (let i = 0; i < data.length; i++) {
-    if (data[i][1] < data[i][4]) {
-      volumeColor = '#55e3b3';
-    } else {
-      volumeColor = '#fa6767';
-    }
+    volumeColor = data[i][1] < data[i][4] ? '#55e3b3' : '#fa6767';
 
     ohlc.push([
       data[i][0] * 1000, // the date
@@ -70,7 +63,11 @@ const sortMarketData = (data) => {
   return [ohlc, volume];
 };
 
+const scrolledList = {};
+
 const options = ([ohlc, volume], stock, socket) => {
+  darkUnica(Highcharts);
+  HC_more(Highcharts);
   if (!ohlc || !volume) return;
   return {
     rangeSelector: {
@@ -185,6 +182,44 @@ const options = ([ohlc, volume], stock, socket) => {
         month: '%b %Y', // example: Jan 2022
         year: '%Y', // example: 2022
       },
+      // dynamic loading of data based on the scrollbar position
+      events: {
+        setExtremes: async function (e) {
+          // Check if the scrollbar has reached the end
+          if (e.min === this.dataMin && !this.isDirty) {
+            // Load new data
+
+            // Check if the data has already been loaded
+            if (scrolledList[e.min]) return;
+            scrolledList[e.min] = true;
+
+            const result = await api.getMarketChartData(stock, e.min);
+
+            console.log(result);
+            if (result.marketdata.length === 0) return;
+            const sortedData = sortMarketData(result.marketdata);
+
+            const newOhlc = sortedData[0];
+            const newVolume = sortedData[1];
+
+            // Add the new data to the existing chart
+            ohlc.unshift(...newOhlc);
+            volume.unshift(...newVolume);
+
+            const candlestickSeries = this.series[0];
+            const volumeSeries = this.series[1];
+            this.setExtremes(e.min, e.max, true, true);
+            candlestickSeries.update({
+              data: ohlc,
+            });
+            volumeSeries.update({
+              data: volume,
+            });
+
+            return;
+          }
+        },
+      },
     },
 
     scrollbar: {
@@ -193,6 +228,7 @@ const options = ([ohlc, volume], stock, socket) => {
 
     tooltip: {
       split: true,
+      followTouchMove: true,
     },
 
     title: {
@@ -215,7 +251,7 @@ const options = ([ohlc, volume], stock, socket) => {
         type: 'candlestick',
         minRange: 1,
         name: stock,
-        data: ohlc,
+        data: ohlc || [],
         color: '#fa6767', // Set the color for negative candles (default)
         upColor: '#55e3b3', // Set the color for positive candles
         lineColor: '#fa6767', // Set the color for the candlestick line
@@ -225,7 +261,7 @@ const options = ([ohlc, volume], stock, socket) => {
       {
         type: 'column',
         name: 'Volume',
-        data: volume,
+        data: volume || [],
         yAxis: 1,
         borderWidth: 0,
         dataGrouping: groupingUnits,
@@ -235,11 +271,38 @@ const options = ([ohlc, volume], stock, socket) => {
     chart: {
       backgroundColor: '#131010', // Set the desired background color here
       animation: false,
+      panning: true,
       events: {
         load: function (e) {
           const candlestickSeries = this.series[0];
           const volumeSeries = this.series[1];
           if (!socket) return;
+
+          setInterval(() => {
+            let date = new Date();
+            date.setSeconds(0);
+            date.setMilliseconds(0);
+            date = date.getTime();
+
+            if (date > ohlc[ohlc.length - 1][0]) {
+              const data = [
+                date,
+                ohlc[ohlc.length - 1][4],
+                ohlc[ohlc.length - 1][4],
+                ohlc[ohlc.length - 1][4],
+                ohlc[ohlc.length - 1][4],
+              ];
+
+              const volumeData = {
+                x: date,
+                y: 0,
+                color: '#fa6767',
+              };
+              candlestickSeries.addPoint(data);
+
+              volumeSeries.addPoint(volumeData);
+            }
+          }, 1000 * 10);
 
           socket.on(`marketChart-${stock}`, (d) => {
             const date = d.chartData.unix_timestamp * 1000;
@@ -274,9 +337,6 @@ const options = ([ohlc, volume], stock, socket) => {
                 data: volume,
               });
             } else {
-              // ohlc.push(data);
-              // volume.push(volumeData);
-
               candlestickSeries.addPoint(data);
               volumeSeries.addPoint(volumeData);
             }

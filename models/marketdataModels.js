@@ -210,18 +210,30 @@ export const moveRowToTodayHistory = async (symbol, time) => {
 
 export const getMarketDataHistory = async (symbol) => {
   let [rows] = await pool.query(
-    'SELECT * FROM market_data_today WHERE symbol = ?',
+    'SELECT * FROM market_data_today WHERE symbol = ? ORDER BY unix_timestamp DESC LIMIT 720',
     [symbol]
   );
 
+  rows = rows.reverse();
+
   const latestMarketData = await getLastestChartData(symbol);
   rows.push(latestMarketData);
+  return rows;
+};
+
+export const getMarketDataDynamicHistory = async (symbol, time) => {
+  let [rows] = await pool.query(
+    'SELECT * FROM market_data_today WHERE symbol = ? AND unix_timestamp < ? ORDER BY unix_timestamp DESC LIMIT 720',
+    [symbol, time / 1000]
+  );
+
+  rows = rows.reverse();
 
   return rows;
 };
 
 export const getStockPrices = async () => {
-  const [stocks] = await pool.query('SELECT symbol, name  FROM stock');
+  const [stocks] = await pool.query('SELECT symbol, name FROM stock');
 
   const stockPrices = {};
 

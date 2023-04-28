@@ -82,7 +82,14 @@ const api = {
     return await response.json();
   },
 
-  async getMarketChartData(symbol) {
+  async getMarketChartData(symbol, time) {
+    if (time) {
+      const response = await fetch(
+        `${api.hostname}/marketdata/marketchart?symbol=${symbol}&time=${time}`
+      );
+      return await response.json();
+    }
+
     const response = await fetch(
       `${api.hostname}/marketdata/marketchart?symbol=${symbol}`
     );
