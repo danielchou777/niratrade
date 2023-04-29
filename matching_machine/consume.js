@@ -85,7 +85,7 @@ await consumer.run({
         console.log(price, unfilledQauntity);
 
         // update user balance
-        await updateUserLockedBalance(userId, price * unfilledQauntity);
+        await updateUserLockedBalance(userId, -price * unfilledQauntity);
       }
 
       // if sell side, remove from sellOrders cache
@@ -97,7 +97,7 @@ await consumer.run({
         await updateCancelOrder(orderIdCancel, '4');
 
         // update user balance
-        await updateUserLockedStock(userId, symbol, unfilledQauntity);
+        await updateUserLockedStock(userId, symbol, -unfilledQauntity);
       }
 
       broadcastUsers.push(userId);

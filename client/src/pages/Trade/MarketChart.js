@@ -195,7 +195,6 @@ const options = ([ohlc, volume], stock, socket) => {
 
             const result = await api.getMarketChartData(stock, e.min);
 
-            console.log(result);
             if (result.marketdata.length === 0) return;
             const sortedData = sortMarketData(result.marketdata);
 
@@ -278,69 +277,35 @@ const options = ([ohlc, volume], stock, socket) => {
           const volumeSeries = this.series[1];
           if (!socket) return;
 
-          setInterval(() => {
-            let date = new Date();
-            date.setSeconds(0);
-            date.setMilliseconds(0);
-            date = date.getTime();
+          // setInterval(() => {
+          //   let date = new Date();
+          //   date.setSeconds(0);
+          //   date.setMilliseconds(0);
+          //   date = date.getTime();
 
-            if (date > ohlc[ohlc.length - 1][0]) {
-              const data = [
-                date,
-                ohlc[ohlc.length - 1][4],
-                ohlc[ohlc.length - 1][4],
-                ohlc[ohlc.length - 1][4],
-                ohlc[ohlc.length - 1][4],
-              ];
+          //   if (date > ohlc[ohlc.length - 1][0]) {
+          //     const data = [
+          //       date,
+          //       ohlc[ohlc.length - 1][4],
+          //       ohlc[ohlc.length - 1][4],
+          //       ohlc[ohlc.length - 1][4],
+          //       ohlc[ohlc.length - 1][4],
+          //     ];
 
-              const volumeData = {
-                x: date,
-                y: 0,
-                color: '#fa6767',
-              };
-              candlestickSeries.addPoint(data);
+          //     const volumeData = {
+          //       x: date,
+          //       y: 0,
+          //       color: '#fa6767',
+          //     };
 
-              volumeSeries.addPoint(volumeData);
-            }
-          }, 1000 * 10);
-
-          socket.on(`marketChart-${stock}`, (d) => {
-            const date = d.chartData.unix_timestamp * 1000;
-            const data = [
-              date,
-              d.chartData.open,
-              d.chartData.high,
-              d.chartData.low,
-              d.chartData.close,
-            ];
-            const updatedVolume = d.chartData.volume;
-
-            const volumeColor =
-              d.chartData.close > d.chartData.open ? '#55e3b3' : '#fa6767';
-
-            const volumeData = {
-              x: date,
-              y: updatedVolume,
-              color: volumeColor,
-            };
-
-            if (ohlc[ohlc.length - 1][0] === date) {
-              ohlc[ohlc.length - 1] = data;
-              volume[volume.length - 1] = volumeData;
-
-              console.log(volume);
-
-              candlestickSeries.update({
-                data: ohlc,
-              });
-              volumeSeries.update({
-                data: volume,
-              });
-            } else {
-              candlestickSeries.addPoint(data);
-              volumeSeries.addPoint(volumeData);
-            }
-          });
+          //     try {
+          //       candlestickSeries.addPoint(data);
+          //       volumeSeries.addPoint(volumeData);
+          //     } catch (err) {
+          //       // console.log(err);
+          //     }
+          //   }
+          // }, 1000 * 10);
         },
       },
     },
@@ -358,12 +323,50 @@ const MarketChart = React.memo((props) => {
       setChartData(sortedMarketData);
     });
 
+    if (!socket) return;
+
+    socket.on(`marketChart-${props.stock}`, (d) => {
+      const date = d.chartData.unix_timestamp * 1000;
+      const data = [
+        date,
+        d.chartData.open,
+        d.chartData.high,
+        d.chartData.low,
+        d.chartData.close,
+      ];
+      const updatedVolume = d.chartData.volume;
+
+      const volumeColor =
+        d.chartData.close > d.chartData.open ? '#55e3b3' : '#fa6767';
+
+      const volumeData = {
+        x: date,
+        y: updatedVolume,
+        color: volumeColor,
+      };
+
+      if (ohlc[ohlc.length - 1][0] === date) {
+        ohlc[ohlc.length - 1] = data;
+        volume[volume.length - 1] = volumeData;
+
+        chartRef.current.chart.series[0].update({
+          data: ohlc,
+        });
+        chartRef.current.chart.series[1].update({
+          data: volume,
+        });
+      } else {
+        chartRef.current.chart.series[0].addPoint(data);
+        chartRef.current.chart.series[1].addPoint(volumeData);
+      }
+    });
+
     return () => {
       if (socket) {
         socket.off(`marketChart-${props.stock}`);
       }
     };
-  }, [props.stock]);
+  }, [props.stock, socket]);
 
   return (
     <MarketChartWrapper>

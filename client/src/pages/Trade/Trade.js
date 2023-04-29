@@ -14,12 +14,17 @@ import { UserContext } from '../../store/UserContext';
 const Wrapper = styled.div`
   margin-top: 20px;
   display: grid;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   text-align: center;
+  background-color: #131010;
+`;
+
+const InnerWrapper = styled.div`
+  display: grid;
+  flex-direction: column;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: 70px repeat(1, 1fr);
-  background-color: #131010;
 `;
 
 const LeftWrapper = styled.div`
@@ -45,7 +50,6 @@ function Trade() {
   const { user, refreshSocket, socket } = React.useContext(UserContext);
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
-  const [latestMarketdata, setLatestMarketdata] = React.useState(null);
 
   React.useEffect(() => {
     const jwtToken = window.localStorage.getItem('jwtToken');
@@ -116,34 +120,35 @@ function Trade() {
 
   return (
     <Wrapper>
-      <LeftWrapper>
-        <OrderBooks
-          buyOrderBook={buyOrderBook}
-          sellOrderBook={sellOrderBook}
-          stock={stock}
-        />
-        <UserWallet refresh={refresh} setRefresh={setRefresh} />
-      </LeftWrapper>
+      <InnerWrapper>
+        <LeftWrapper>
+          <OrderBooks
+            buyOrderBook={buyOrderBook}
+            sellOrderBook={sellOrderBook}
+            stock={stock}
+          />
+          <UserWallet refresh={refresh} setRefresh={setRefresh} />
+        </LeftWrapper>
 
-      <OrderWrapper>
-        <StockInfo
-          stockInfo={stockInfo}
-          setStock={setStock}
-          stock={stock}
-          stocks={stocks}
-        />
+        <OrderWrapper>
+          <StockInfo
+            stockInfo={stockInfo}
+            setStock={setStock}
+            stock={stock}
+            stocks={stocks}
+          />
 
-        <OrderForm
-          onSubmit={api.sendOrder}
-          refresh={refresh}
-          setRefresh={setRefresh}
-          stock={stock}
-        />
-        <MarketChart stock={stock}></MarketChart>
-
-        <UserPosition refresh={refresh} setRefresh={setRefresh} />
-      </OrderWrapper>
-      <MarketTrades executions={executions} stock={stock} refresh={refresh} />
+          <OrderForm
+            onSubmit={api.sendOrder}
+            refresh={refresh}
+            setRefresh={setRefresh}
+            stock={stock}
+          />
+          <MarketChart stock={stock}></MarketChart>
+        </OrderWrapper>
+        <MarketTrades executions={executions} stock={stock} refresh={refresh} />
+      </InnerWrapper>
+      <UserPosition refresh={refresh} setRefresh={setRefresh} />
     </Wrapper>
   );
 }

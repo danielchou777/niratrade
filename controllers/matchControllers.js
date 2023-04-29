@@ -52,6 +52,11 @@ export const order = (req, res, next) => {
       return;
     }
 
+    if (data.toString() === 'Invalid cancel order') {
+      res.status(StatusCodes.BAD_REQUEST).json({ msg: `${data.toString()}` });
+      return;
+    }
+
     client.end();
 
     res.status(StatusCodes.OK).json({ msg: `${data.toString()}` });
