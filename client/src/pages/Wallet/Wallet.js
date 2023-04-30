@@ -49,7 +49,7 @@ const PortfolioWrapper = styled.div`
 const Portfolio = styled.div`
   display: flex;
   flex-direction: column;
-  width: 300px;
+  width: 400px;
   margin-right: 8rem;
 `;
 
@@ -84,7 +84,17 @@ const StocksHeader = styled.div`
   color: #bdbcb9;
   flex-direction: row;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const StockHeaderSymbol = styled.div`
+  width: 20%;
+  text-align: left;
+`;
+
+const StockHeader = styled.div`
+  width: 33%;
+  text-align: right;
 `;
 
 const StockWrapper = styled.div`
@@ -94,6 +104,16 @@ const StockWrapper = styled.div`
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 1rem;
+`;
+
+const StockInfoSymbol = styled.div`
+  width: 20%;
+  text-align: left;
+`;
+
+const StockInfo = styled.div`
+  width: 33%;
+  text-align: right;
 `;
 
 const colors = ['#4E5CFD', '#4CCABE', '#8799C7', '#F2B115', '#894AB5'];
@@ -115,6 +135,15 @@ const options = (data) => {
       pie: {
         shadow: false,
         borderWidth: 0,
+        dataLabels: {
+          enabled: true,
+          color: '#fff',
+          style: {
+            // fontFamily: 'Chivo Mono, monospace',
+            fontSize: '16px',
+            textOutline: 'transparent',
+          },
+        },
       },
     },
     tooltip: {
@@ -236,7 +265,10 @@ function Wallet() {
 
   React.useEffect(() => {
     const data = sortMarketData(userStock, balance, stockPrices);
-    setSortedMarketData(data);
+    if (!data) return;
+    const filteredData = data.filter((item) => item.y > 0);
+
+    setSortedMarketData(filteredData);
   }, [userStock, balance, stockPrices]);
 
   return (
@@ -265,22 +297,22 @@ function Wallet() {
           </CashWrapper>
           <CashWrapper>
             <div>Cash(NTD) </div>
-            <div>{thousandSeparator(balance)}</div>
+            <div>${thousandSeparator(balance)}</div>
           </CashWrapper>
           <StocksTitle>Stocks</StocksTitle>
 
           <StocksHeader>
-            <div>Symbol</div>
-            <div>Amount</div>
-            <div>Value(NTD)</div>
+            <StockHeaderSymbol>Symbol</StockHeaderSymbol>
+            <StockHeader>Amount</StockHeader>
+            <StockHeader>Value(NTD)</StockHeader>
           </StocksHeader>
 
           {calEachStockAsset(userStock, stockPrices).map((stock) => {
             return (
               <StockWrapper key={stock.symbol}>
-                <div>{stock.symbol}</div>
-                <div>{thousandSeparator(stock.quantity)}</div>
-                <div>{thousandSeparator(stock.asset)}</div>
+                <StockInfoSymbol>{stock.symbol}</StockInfoSymbol>
+                <StockInfo>{thousandSeparator(stock.quantity)}</StockInfo>
+                <StockInfo>${thousandSeparator(stock.asset)}</StockInfo>
               </StockWrapper>
             );
           })}

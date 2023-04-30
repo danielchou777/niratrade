@@ -4,9 +4,12 @@ import api from '../../utils/api';
 import { UserContext } from '../../store/UserContext';
 import { toFormatedTime } from '../../utils/util';
 import Swal from 'sweetalert2';
+import { Pagination } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const Wrapper = styled.div`
   width: 100%;
+  height: 500px;
   color: white;
   margin-top: 1rem;
   display: flex;
@@ -52,6 +55,15 @@ const Header = styled.div`
   font-weight: bold;
 `;
 
+const HeaderTotal = styled.div`
+  width: 8%;
+  color: #bdbcb9;
+  font-size: 0.9rem;
+  text-align: left;
+  margin-bottom: 1rem;
+  font-weight: bold;
+`;
+
 const OpenOrderWrapper = styled.div`
   display: flex;
   justify-content: space-between;
@@ -72,6 +84,13 @@ const OpenOrder = styled.div`
   text-align: left;
   color: #bdbcb9;
   text-transform: capitalize;
+`;
+
+const OpenOrderTotal = styled.div`
+  font-size: 0.9rem;
+  width: 8%;
+  text-align: left;
+  color: #bdbcb9;
 `;
 
 const OpenOrderSide = styled.div`
@@ -164,9 +183,36 @@ const ResetBtn = styled.div`
   }
 `;
 
+const PaginationWrapper = styled.div`
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+`;
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#fff',
+    },
+    second: {
+      main: '#fff',
+    },
+  },
+});
+
+const NoOpenWrapper = styled.div`
+  color: #bdbcb9;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 function UserPosition(props) {
-  const [openOrders, setOpenOrders] = React.useState(null);
+  const [openOrders, setOpenOrders] = React.useState([]);
   const { user } = React.useContext(UserContext);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -193,26 +239,75 @@ function UserPosition(props) {
     setSelectedStatus('All');
     setSelectedSide('All');
 
-    setOpenOrders(null);
+    setOpenOrders([]);
   };
 
+  React.useEffect(() => {
+    (async () => {
+      if (!user) return;
+      const { result, totalPages } = await api.getAllPositions(
+        selectedSymbol,
+        selectedStatus,
+        selectedSide,
+        page
+      );
+
+      if (result.length === 0) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Oops...',
+          text: 'No result found',
+        });
+      }
+
+      setOpenOrders(result);
+      setTotalPage(totalPages);
+    })();
+  }, [page]);
+
   const handleSearch = async () => {
+    setPage(1);
     if (!user) return;
-    const { result } = await api.getAllPositions(
+    const { result, totalPages } = await api.getAllPositions(
       selectedSymbol,
       selectedStatus,
-      selectedSide
+      selectedSide,
+      page
     );
 
     if (result.length === 0) {
+      setOpenOrders([]);
+      setTotalPage(1);
       Swal.fire({
         icon: 'info',
         title: 'Oops...',
         text: 'No result found',
       });
+      return;
     }
 
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: 'Search completed',
+    });
+
     setOpenOrders(result);
+    setTotalPage(totalPages);
+  };
+
+  const showStatus = (status) => {
+    if (status === '0' || status === '1') {
+      return 'Open';
+    } else if (status === '2') {
+      return 'Filled';
+    } else if (status === '4') {
+      return 'Canceled';
+    }
+  };
+
+  const handleChange = (event, value) => {
+    setPage(value);
   };
 
   return (
@@ -250,7 +345,8 @@ function UserPosition(props) {
           >
             <option value='All'>All</option>
             <option value='Open'>Open</option>
-            <option value='Closed'>Closed</option>
+            <option value='Closed'>Filled</option>
+            <option value='Canceled'>Canceled</option>
           </Dropdown>
         )}
         <SelectorItem
@@ -282,7 +378,7 @@ function UserPosition(props) {
         <Header>Price(NTD)</Header>
         <Header>Amount</Header>
         <Header>Filled</Header>
-        <Header>Total(NTD)</Header>
+        <HeaderTotal>Total(NTD)</HeaderTotal>
       </PositionHeaders>
       {openOrders &&
         openOrders.map((order) => {
@@ -299,11 +395,13 @@ function UserPosition(props) {
 
           const time = toFormatedTime(created_at);
 
+          const statusInfo = showStatus(status);
+
           return (
             <OpenOrderWrapper key={order.id}>
               <OpenOrderDate>{time}</OpenOrderDate>
               <OpenOrder>{symbol}/NTD</OpenOrder>
-              <OpenOrder>{status === '2' ? 'Closed' : 'Open'}</OpenOrder>
+              <OpenOrder>{statusInfo}</OpenOrder>
               <OpenOrder>{type === '2' ? 'limit' : 'NULL'}</OpenOrder>
               <OpenOrderSide side={side}>
                 {side === 'b' ? 'buy' : 'sell'}
@@ -315,10 +413,35 @@ function UserPosition(props) {
               <OpenOrder>
                 {Math.floor(((quantity - unfilled_quantity) * 100) / quantity)}%
               </OpenOrder>
-              <OpenOrder>{thousandSeparator(price * quantity)}</OpenOrder>
+              <OpenOrderTotal>
+                {quantity - unfilled_quantity
+                  ? thousandSeparator(price * (quantity - unfilled_quantity))
+                  : '-'}
+              </OpenOrderTotal>
             </OpenOrderWrapper>
           );
         })}
+
+      {openOrders.length > 0 && (
+        <ThemeProvider theme={theme}>
+          <PaginationWrapper>
+            <Pagination
+              color={'primary'}
+              sx={{ '& .MuiPaginationItem-root': { color: '#aaa' } }}
+              count={totalPage}
+              size='large'
+              page={page}
+              variant='outlined'
+              shape='rounded'
+              onChange={handleChange}
+            />
+          </PaginationWrapper>
+        </ThemeProvider>
+      )}
+
+      <NoOpenWrapper>
+        {openOrders.length === 0 && <div>No orders</div>}
+      </NoOpenWrapper>
     </Wrapper>
   );
 }

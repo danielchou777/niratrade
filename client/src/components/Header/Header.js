@@ -4,6 +4,7 @@ import { BsFillPersonFill } from 'react-icons/bs';
 import { AiFillCaretDown } from 'react-icons/ai';
 import styled from 'styled-components';
 import logo from './logo.png';
+import HeaderLogo from './Logo';
 import api from '../../utils/api';
 import { UserContext } from '../../store/UserContext';
 import Swal from 'sweetalert2';
@@ -29,6 +30,8 @@ const Logo = styled(Link)`
   background-image: url(${logo});
   background-size: contain;
 `;
+
+const HeaderLogoWrapper = styled.div``;
 
 const ServiceLinks = styled.div`
   margin: 0 0 0 57px;
@@ -149,10 +152,6 @@ const services = [
     name: 'wallet',
     displayText: 'Wallet',
   },
-  // {
-  //   name: 'about',
-  //   displayText: 'About us',
-  // },
 ];
 
 function Header() {
@@ -204,7 +203,10 @@ function Header() {
 
   return (
     <Wrapper>
-      <Logo to='/' />
+      {/* <Logo to='/' /> */}
+      <HeaderLogoWrapper onClick={() => navigate('/')}>
+        <HeaderLogo />
+      </HeaderLogoWrapper>
       <ServiceLinks>
         {services.map(({ name, displayText }, index) => (
           <ServiceLink

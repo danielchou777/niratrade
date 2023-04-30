@@ -17,12 +17,24 @@ export const getStock = async (userId) => {
   return rows;
 };
 
-export const getPosition = async (userId) => {
+export const getPosition = async (userId, page) => {
+  const offset = (page - 1) * 6;
+
+  const [rows] = await pool.query(
+    'SELECT * FROM orders WHERE user_id = ? AND (status = "0" OR status = "1") ORDER BY id LIMIT 6 OFFSET ?',
+    [userId, offset]
+  );
+
+  return rows;
+};
+
+export const getPositionPage = async (userId) => {
   const [rows] = await pool.execute(
-    'SELECT * FROM orders WHERE user_id = ? AND (status = "0" OR status = "1")',
+    'SELECT COUNT(*) AS page FROM orders WHERE user_id = ? AND (status = "0" OR status = "1")',
     [userId]
   );
-  return rows;
+
+  return rows[0].page;
 };
 
 export const getExecution = async (userId, symbol) => {
@@ -51,7 +63,7 @@ export const getExecution = async (userId, symbol) => {
   return rows;
 };
 
-export const getAllPositions = async (userId, symbol, status, side) => {
+export const getAllPositions = async (userId, symbol, status, side, page) => {
   if (symbol === 'All') {
     symbol = '%';
   }
@@ -65,25 +77,53 @@ export const getAllPositions = async (userId, symbol, status, side) => {
     side = 's';
   }
 
+  const offset = (page - 1) * 6;
+
   if (status === 'Open') {
-    const [rows] = await pool.execute(
-      'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND (status = "0" OR status = "1") AND side LIKE ? ORDER BY created_at DESC',
+    const [rows] = await pool.query(
+      'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND (status = "0" OR status = "1") AND side LIKE ? ORDER BY created_at DESC LIMIT 6 OFFSET ?',
+      [userId, symbol, side, offset]
+    );
+
+    const [result] = await pool.query(
+      'SELECT COUNT(*) AS count FROM orders WHERE user_id = ? AND symbol LIKE ? AND (status = "0" OR status = "1") AND side LIKE ? ORDER BY created_at DESC',
       [userId, symbol, side]
     );
 
-    return rows;
+    return { rows, count: result[0].count };
   }
   // Update status
   if (status === 'All') {
     status = '%';
   } else if (status === 'Closed') {
     status = '2';
+  } else if (status === 'Canceled') {
+    status = '4';
   }
 
-  const [rows] = await pool.execute(
-    'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND status LIKE ? AND side LIKE ? ORDER BY created_at DESC',
+  if (status === 'Cancel') {
+    const [rows] = await pool.query(
+      'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND status = "4" AND side LIKE ? ORDER BY created_at DESC LIMIT 6 OFFSET ?',
+      [userId, symbol, side, offset]
+    );
+
+    const [result] = await pool.query(
+      'SELECT COUNT(*) AS count FROM orders WHERE user_id = ? AND symbol LIKE ? AND status = "4" AND side LIKE ? ORDER BY created_at DESC',
+      [userId, symbol, side]
+    );
+
+    return { rows, count: result[0].count };
+  }
+
+  const [rows] = await pool.query(
+    'SELECT * FROM orders WHERE user_id = ? AND symbol LIKE ? AND status LIKE ? AND side LIKE ? ORDER BY created_at DESC LIMIT 6 OFFSET ?',
+    [userId, symbol, status, side, offset]
+  );
+
+  const [result] = await pool.query(
+    'SELECT COUNT(*) AS count FROM orders WHERE user_id = ? AND symbol LIKE ? AND status LIKE ? AND side LIKE ? ORDER BY created_at DESC',
     [userId, symbol, status, side]
   );
 
-  return rows;
+  return { rows, count: result[0].count };
 };

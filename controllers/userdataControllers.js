@@ -4,6 +4,7 @@ import {
   getPosition,
   getExecution,
   getAllPositions,
+  getPositionPage,
 } from '../models/userdataModels.js';
 
 import Error from '../errors/index.js';
@@ -19,9 +20,13 @@ export const wallet = async (req, res) => {
 };
 
 export const position = async (req, res) => {
+  const { page } = req.query;
   const { userId } = req.payload;
-  const result = await getPosition(userId);
-  res.status(StatusCodes.OK).json({ result });
+  const result = await getPosition(userId, page);
+  const totalPositions = await getPositionPage(userId);
+  const totalPages = Math.ceil(totalPositions / 6);
+
+  res.status(StatusCodes.OK).json({ result, totalPages });
 };
 
 export const execution = async (req, res) => {
@@ -38,10 +43,19 @@ export const execution = async (req, res) => {
 
 export const allPosition = async (req, res) => {
   const { userId } = req.payload;
-  const { symbol, status, side } = req.query;
+  const { symbol, status, side, page } = req.query;
 
   if (!userId) throw new Error.BadRequestError('userId is required');
 
-  const result = await getAllPositions(userId, symbol, status, side);
-  res.status(StatusCodes.OK).json({ result });
+  const { rows, count } = await getAllPositions(
+    userId,
+    symbol,
+    status,
+    side,
+    page
+  );
+
+  const totalPages = Math.ceil(count / 6);
+
+  res.status(StatusCodes.OK).json({ result: rows, totalPages });
 };

@@ -46,17 +46,20 @@ const api = {
     return await response.json();
   },
 
-  async getPositions(userId) {
+  async getPositions(page) {
     const jwtToken = window.localStorage.getItem('jwtToken');
     if (!jwtToken) return;
 
-    const response = await fetch(`${api.hostname}/userdata/position`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    });
+    const response = await fetch(
+      `${api.hostname}/userdata/position?page=${page}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      }
+    );
     return await response.json();
   },
 
@@ -134,12 +137,12 @@ const api = {
     return await response.json();
   },
 
-  async getAllPositions(symbol, status, side) {
+  async getAllPositions(symbol, status, side, page) {
     const jwtToken = window.localStorage.getItem('jwtToken');
     if (!jwtToken) return;
 
     const response = await fetch(
-      `${api.hostname}/userdata/allPosition?symbol=${symbol}&status=${status}&side=${side}`,
+      `${api.hostname}/userdata/allPosition?symbol=${symbol}&status=${status}&side=${side}&page=${page}`,
       {
         method: 'GET',
         headers: {

@@ -4,11 +4,14 @@ import api from '../../utils/api';
 import { UserContext } from '../../store/UserContext';
 import { toFormatedTime } from '../../utils/util';
 import { BsTrash } from 'react-icons/bs';
-import { index } from 'd3';
+import { Pagination } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Swal from 'sweetalert2';
 
+const UserPositionWrapper = styled.div``;
+
 const Wrapper = styled.div`
-  height: 100%;
+  height: 500px;
   width: 100%;
   color: white;
   padding: 2rem 2rem 0rem 3rem;
@@ -130,6 +133,23 @@ const CancelOrderBtn = styled.div`
   }
 `;
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#fff',
+    },
+    second: {
+      main: '#fff',
+    },
+  },
+});
+
+const PaginationWrapper = styled.div`
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+`;
+
 const NoOpenWrapper = styled.div`
   color: #bdbcb9;
   margin-top: 2rem;
@@ -141,15 +161,18 @@ const NoOpenWrapper = styled.div`
 function UserPosition(props) {
   const [openOrders, setOpenOrders] = React.useState([]);
   const { user } = React.useContext(UserContext);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
 
   React.useEffect(() => {
     (async () => {
       if (!user) return;
-      const { result } = await api.getPositions(user.userId);
+      const { result, totalPages } = await api.getPositions(page);
 
       setOpenOrders(result);
+      setTotalPage(totalPages);
     })();
-  }, [props.refresh, user]);
+  }, [props.refresh, user, page]);
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -181,6 +204,13 @@ function UserPosition(props) {
         'success'
       );
     }
+    if (openOrders.length === 1 && page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  const handleChange = (event, value) => {
+    setPage(value);
   };
 
   return (
@@ -217,32 +247,51 @@ function UserPosition(props) {
             const time = toFormatedTime(created_at);
 
             return (
-              <OpenOrderWrapper key={order.id}>
-                <OpenOrderDate>{time}</OpenOrderDate>
-                <OpenOrder>{symbol}/NTD</OpenOrder>
-                <OpenOrder>{type === '2' ? 'limit' : 'NULL'}</OpenOrder>
-                <OpenOrderSide side={side}>
-                  {side === 'b' ? 'buy' : 'sell'}
-                </OpenOrderSide>
-                <OpenOrder>{price}</OpenOrder>
-                <OpenOrder>{`${
-                  quantity - unfilled_quantity
-                }/${quantity}`}</OpenOrder>
-                <OpenOrder>
-                  {Math.floor(
-                    ((quantity - unfilled_quantity) * 100) / quantity
-                  )}
-                  %
-                </OpenOrder>
-                <OpenOrder>{thousandSeparator(price * quantity)}</OpenOrder>
-                <CancelOrder>
-                  <CancelOrderBtn onClick={() => handleCancelOrder(index)}>
-                    <BsTrash />
-                  </CancelOrderBtn>
-                </CancelOrder>
-              </OpenOrderWrapper>
+              <UserPositionWrapper key={order.id}>
+                <OpenOrderWrapper>
+                  <OpenOrderDate>{time}</OpenOrderDate>
+                  <OpenOrder>{symbol}/NTD</OpenOrder>
+                  <OpenOrder>{type === '2' ? 'limit' : 'NULL'}</OpenOrder>
+                  <OpenOrderSide side={side}>
+                    {side === 'b' ? 'buy' : 'sell'}
+                  </OpenOrderSide>
+                  <OpenOrder>{price}</OpenOrder>
+                  <OpenOrder>{`${
+                    quantity - unfilled_quantity
+                  }/${quantity}`}</OpenOrder>
+                  <OpenOrder>
+                    {Math.floor(
+                      ((quantity - unfilled_quantity) * 100) / quantity
+                    )}
+                    %
+                  </OpenOrder>
+                  <OpenOrder>{thousandSeparator(price * quantity)}</OpenOrder>
+                  <CancelOrder>
+                    <CancelOrderBtn onClick={() => handleCancelOrder(index)}>
+                      <BsTrash />
+                    </CancelOrderBtn>
+                  </CancelOrder>
+                </OpenOrderWrapper>
+              </UserPositionWrapper>
             );
           })}
+
+        {openOrders.length > 0 && (
+          <ThemeProvider theme={theme}>
+            <PaginationWrapper>
+              <Pagination
+                color={'primary'}
+                sx={{ '& .MuiPaginationItem-root': { color: '#aaa' } }}
+                count={totalPage}
+                size='large'
+                page={page}
+                variant='outlined'
+                shape='rounded'
+                onChange={handleChange}
+              />
+            </PaginationWrapper>
+          </ThemeProvider>
+        )}
 
         <NoOpenWrapper>
           {openOrders.length === 0 && <div>No open orders</div>}
