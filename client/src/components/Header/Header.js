@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { BsFillPersonFill } from 'react-icons/bs';
 import { AiFillCaretDown } from 'react-icons/ai';
 import styled from 'styled-components';
-import logo from './logo.png';
-import HeaderLogo from './Logo';
+import HeaderLogo from './Logo.js';
 import api from '../../utils/api';
 import { UserContext } from '../../store/UserContext';
 import Swal from 'sweetalert2';
@@ -22,13 +21,6 @@ const Wrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #424141;
-`;
-
-const Logo = styled(Link)`
-  width: 258px;
-  height: 36px;
-  background-image: url(${logo});
-  background-size: contain;
 `;
 
 const HeaderLogoWrapper = styled.div``;

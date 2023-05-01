@@ -7,6 +7,7 @@ import Signin from './pages/Signin/Signin';
 import Signup from './pages/Signup/Signup';
 import Trade from './pages/Trade/Trade';
 import Wallet from './pages/Wallet/Wallet';
+import Home from './pages/Home/Home';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -14,6 +15,7 @@ root.render(
   <BrowserRouter>
     <Routes>
       <Route path='/' element={<App />}>
+        <Route path='' element={<Home />} />
         <Route path='trade' element={<Trade />} />
         <Route path='wallet' element={<Wallet />} />
         <Route path='signin' element={<Signin />} />

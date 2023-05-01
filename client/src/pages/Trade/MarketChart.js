@@ -11,7 +11,7 @@ import api from '../../utils/api';
 
 const MarketChartWrapper = styled.div`
   width: 100%;
-  padding: 1rem 1rem 1rem 2rem;
+  padding: 0rem 1rem 1rem 2rem;
   background-color: #131010;
   color: white;
 `;
