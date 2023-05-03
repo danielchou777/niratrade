@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import {
   getBalance,
   getStock,
@@ -8,8 +9,6 @@ import {
 } from '../models/userdataModels.js';
 
 import Error from '../errors/index.js';
-
-import { StatusCodes } from 'http-status-codes';
 
 export const wallet = async (req, res) => {
   const { userId } = req.payload;

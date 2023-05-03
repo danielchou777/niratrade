@@ -1,10 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
+import { v4 as uuidv4 } from 'uuid';
+import emailValidator from 'email-validator';
 import Error from '../errors/index.js';
 import { getUserByEmail, createUser } from '../models/userAuthModels.js';
-import { hashPassword, comparePassword } from '../utils/util.js';
-import { v4 as uuidv4 } from 'uuid';
-import { createJWT } from '../utils/util.js';
-import emailValidator from 'email-validator';
+import { hashPassword, comparePassword, createJWT } from '../utils/util.js';
 
 export const signup = async (req, res) => {
   const { name, email, password } = req.body;
@@ -49,8 +48,6 @@ export const signup = async (req, res) => {
 };
 
 export const signin = async (req, res) => {
-  let payload;
-
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -66,7 +63,7 @@ export const signin = async (req, res) => {
     throw new Error.UnauthorizedError('User does not exist');
   }
 
-  let userData = result[0];
+  const userData = result[0];
 
   const isMatch = await comparePassword(password, userData.password);
 
@@ -76,7 +73,7 @@ export const signin = async (req, res) => {
 
   const { user_id, name } = result[0];
 
-  payload = { name, email, userId: user_id };
+  const payload = { name, email, userId: user_id };
 
   const jwt = createJWT({ payload });
 

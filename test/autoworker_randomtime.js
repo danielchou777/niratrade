@@ -1,16 +1,15 @@
 import axios from 'axios';
 import https from 'https';
 
-const ip = 'http://localhost:3000/api/1.0/match/order';
-//ip
+// const ip = 'http://localhost:3000/api/1.0/match/order';
+const ip = 'https://www.danielchou.online/api/1.0/match/order';
 
 const jwtToken =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODI4MzE5ODMsImV4cCI6MTY4MzE5MTk4M30.Vq0QS1nRX9o3zrv6qH8i4aZqbVQx4xnC5WDxZJMtqJY';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODI5Mjg4OTgsImV4cCI6MTY4MzI4ODg5OH0.WIrnjELrvCOMGUSJLXlKF1xZiRkZNE7C1Rpqgc9v-GI';
 
 const randomOrder1 = async () => {
-  const price = 80 + Math.floor(Math.random() * 40);
-  const quantity = 5 + Math.floor(Math.random() * 10);
-
+  const price = 70 + Math.floor(Math.random() * 80);
+  const quantity = 1 + Math.floor(Math.random() * 14);
   await axios.post(
     ip,
     {
@@ -32,14 +31,14 @@ const randomOrder1 = async () => {
       }),
     }
   );
-  const rand = Math.floor(Math.random() * 5 + 10);
+  const rand = Math.floor(Math.random() * 5 + 15);
 
   setTimeout(randomOrder1, rand * 100);
 };
 
 const randomOrder2 = async () => {
-  const price = 80 + Math.floor(Math.random() * 40);
-  const quantity = 5 + Math.floor(Math.random() * 10);
+  const price = 70 + Math.floor(Math.random() * 80);
+  const quantity = 1 + Math.floor(Math.random() * 14);
 
   await axios.post(
     ip,
@@ -66,14 +65,14 @@ const randomOrder2 = async () => {
     }
   );
 
-  const rand = Math.floor(Math.random() * 5 + 10);
+  const rand = Math.floor(Math.random() * 5 + 15);
 
   setTimeout(randomOrder2, rand * 100);
 };
 
 const randomOrder3 = async () => {
-  const price = 270 + Math.floor(Math.random() * 60);
-  const quantity = 5 + Math.floor(Math.random() * 10);
+  const price = 250 + Math.floor(Math.random() * 100);
+  const quantity = 1 + Math.floor(Math.random() * 4);
 
   await axios.post(
     ip,
@@ -100,14 +99,14 @@ const randomOrder3 = async () => {
     }
   );
 
-  const rand = Math.floor(Math.random() * 5 + 10);
+  const rand = Math.floor(Math.random() * 5 + 15);
 
   setTimeout(randomOrder3, rand * 100);
 };
 
 const randomOrder4 = async () => {
-  const price = 270 + Math.floor(Math.random() * 60);
-  const quantity = 5 + Math.floor(Math.random() * 10);
+  const price = 250 + Math.floor(Math.random() * 100);
+  const quantity = 1 + Math.floor(Math.random() * 4);
 
   await axios.post(
     ip,
@@ -134,7 +133,7 @@ const randomOrder4 = async () => {
     }
   );
 
-  const rand = Math.floor(Math.random() * 5 + 10);
+  const rand = Math.floor(Math.random() * 5 + 15);
 
   setTimeout(randomOrder4, rand * 100);
 };

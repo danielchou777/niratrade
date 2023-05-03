@@ -1,7 +1,7 @@
 const api = {
   //TODO change this to your own hostname
-  // hostname: 'https://www.danielchou.online/api/1.0',
-  hostname: 'http://localhost:3000/api/1.0',
+  hostname: 'https://www.danielchou.online/api/1.0',
+  // hostname: 'http://localhost:3000/api/1.0',
 
   async sendOrder(order) {
     const jwtToken = window.localStorage.getItem('jwtToken');
