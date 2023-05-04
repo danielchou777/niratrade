@@ -1,3 +1,4 @@
+import cron from 'node-cron';
 import {
   getPreviousClosePrice,
   createNewMarketDataRow,
@@ -5,13 +6,12 @@ import {
   moveRowToTodayHistory,
 } from '../models/marketdataModels.js';
 
-import cron from 'node-cron';
-
 const stocks = ['DAN', 'APPL'];
 
 const createEmptyRowWithOHLC = async (symbol) => {
   // Get the close price of the previous minute
   const now = new Date();
+  console.log(now);
   now.setSeconds(0);
   now.setMilliseconds(0);
   now.setMinutes(now.getMinutes() - 1);

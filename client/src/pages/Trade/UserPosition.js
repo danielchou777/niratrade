@@ -226,10 +226,10 @@ function UserPosition(props) {
           <Header>Pair</Header>
           <Header>Type</Header>
           <Header>Side</Header>
-          <Header>Price(NTD)</Header>
+          <Header>Price (NTD)</Header>
           <Header>Amount</Header>
           <Header>Filled</Header>
-          <Header>Total(NTD)</Header>
+          <Header>Total (NTD)</Header>
           <CancelHeader>Cancel</CancelHeader>
         </PositionHeaders>
         {openOrders &&

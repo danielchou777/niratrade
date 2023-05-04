@@ -159,7 +159,7 @@ const options = (data) => {
         size: '100%',
         innerSize: '70%',
         dataLabels: {
-          distance: -30,
+          distance: -21,
         },
       },
     ],

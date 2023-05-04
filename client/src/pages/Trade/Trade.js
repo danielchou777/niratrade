@@ -45,9 +45,10 @@ function Trade() {
   const [executions, setExecutions] = React.useState(null);
   const [stockInfo, setStockInfo] = React.useState(null);
   const [refresh, setRefresh] = React.useState(0);
-  const [stock, setStock] = React.useState('DAN');
+  // const [stock, setStock] = React.useState('DAN');
   const [stocks, setStocks] = React.useState([]);
-  const { user, refreshSocket, socket } = React.useContext(UserContext);
+  const { user, refreshSocket, socket, stock, setStock } =
+    React.useContext(UserContext);
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
 

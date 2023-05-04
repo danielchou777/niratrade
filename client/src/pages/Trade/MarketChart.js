@@ -11,7 +11,7 @@ import api from '../../utils/api';
 
 const MarketChartWrapper = styled.div`
   width: 100%;
-  padding: 0rem 1rem 1rem 2rem;
+  padding: 0rem 1rem 0rem 2rem;
   background-color: #131010;
   color: white;
 `;
@@ -40,13 +40,14 @@ let ohlc = [],
   };
 
 const sortMarketData = (data) => {
-  ohlc = [];
-  volume = [];
+  const ohlcSort = [];
+  const volumeSort = [];
+
   if (!data) return;
   for (let i = 0; i < data.length; i++) {
     volumeColor = data[i][1] < data[i][4] ? '#55e3b3' : '#fa6767';
 
-    ohlc.push([
+    ohlcSort.push([
       data[i][0] * 1000, // the date
       data[i][1], // open
       data[i][2], // high
@@ -54,23 +55,24 @@ const sortMarketData = (data) => {
       data[i][4], // close
     ]);
 
-    volume.push({
+    volumeSort.push({
       x: data[i][0] * 1000, // the date
       y: data[i][5],
       color: volumeColor,
     });
   }
-  return [ohlc, volume];
+  return [ohlcSort, volumeSort];
 };
 
 const scrolledList = {};
 
-const options = ([ohlc, volume], stock, socket) => {
+const options = ([ohlcSort, volumeSort], stock, socket) => {
   darkUnica(Highcharts);
   HC_more(Highcharts);
-  if (!ohlc || !volume) return;
+  if (!ohlcSort || !volumeSort) return;
   return {
     rangeSelector: {
+      inputEnabled: false,
       animation: false,
       enabled: true,
       dropdown: 'responsive',
@@ -116,8 +118,8 @@ const options = ([ohlc, volume], stock, socket) => {
           },
         },
         {
-          type: 'day',
-          count: 2,
+          type: 'hour',
+          count: 12,
           text: '1hr',
           preserveDataGrouping: true,
           dataGrouping: {
@@ -128,7 +130,7 @@ const options = ([ohlc, volume], stock, socket) => {
         {
           type: 'week',
           count: 'All',
-          text: 'all',
+          text: 'day',
           preserveDataGrouping: true,
           dataGrouping: {
             forced: true,
@@ -205,8 +207,16 @@ const options = ([ohlc, volume], stock, socket) => {
             ohlc.unshift(...newOhlc);
             volume.unshift(...newVolume);
 
+            console.log('new data loaded');
+            console.log(ohlc);
+            console.log(volume);
+
             const candlestickSeries = this.series[0];
             const volumeSeries = this.series[1];
+
+            console.log(candlestickSeries);
+            console.log(volumeSeries);
+
             this.setExtremes(e.min, e.max, true, true);
             candlestickSeries.update({
               data: ohlc,
@@ -240,6 +250,7 @@ const options = ([ohlc, volume], stock, socket) => {
 
     plotOptions: {
       series: {
+        turboThreshold: 5000,
         enableMouseTracking: true,
         animation: false,
       },
@@ -271,43 +282,6 @@ const options = ([ohlc, volume], stock, socket) => {
       backgroundColor: '#131010', // Set the desired background color here
       animation: false,
       panning: true,
-      events: {
-        load: function (e) {
-          const candlestickSeries = this.series[0];
-          const volumeSeries = this.series[1];
-          if (!socket) return;
-
-          // setInterval(() => {
-          //   let date = new Date();
-          //   date.setSeconds(0);
-          //   date.setMilliseconds(0);
-          //   date = date.getTime();
-
-          //   if (date > ohlc[ohlc.length - 1][0]) {
-          //     const data = [
-          //       date,
-          //       ohlc[ohlc.length - 1][4],
-          //       ohlc[ohlc.length - 1][4],
-          //       ohlc[ohlc.length - 1][4],
-          //       ohlc[ohlc.length - 1][4],
-          //     ];
-
-          //     const volumeData = {
-          //       x: date,
-          //       y: 0,
-          //       color: '#fa6767',
-          //     };
-
-          //     try {
-          //       candlestickSeries.addPoint(data);
-          //       volumeSeries.addPoint(volumeData);
-          //     } catch (err) {
-          //       // console.log(err);
-          //     }
-          //   }
-          // }, 1000 * 10);
-        },
-      },
     },
   };
 };
@@ -321,6 +295,9 @@ const MarketChart = React.memo((props) => {
     api.getMarketChartData(props.stock).then((res) => {
       const sortedMarketData = sortMarketData(res.marketdata);
       setChartData(sortedMarketData);
+
+      ohlc = sortedMarketData[0];
+      volume = sortedMarketData[1];
     });
 
     if (!socket) return;
@@ -359,6 +336,9 @@ const MarketChart = React.memo((props) => {
         chartRef.current.chart.series[0].addPoint(data);
         chartRef.current.chart.series[1].addPoint(volumeData);
       }
+
+      console.log(ohlc);
+      console.log(volume);
     });
 
     return () => {

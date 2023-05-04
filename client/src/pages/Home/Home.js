@@ -6,6 +6,7 @@ import BullLogo from './bull.js';
 import portfolioPic from './Portfolio.png';
 import homePic from './home-bg2.jpg';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../store/UserContext';
 
 const Wrapper = styled.div`
   display: flex;
@@ -149,6 +150,16 @@ const IntroSec3Title = styled.div`
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = React.useContext(UserContext);
+
+  const handleGetStarted = () => {
+    if (user) {
+      navigate('/trade');
+    } else {
+      navigate('/signin');
+    }
+  };
+
   return (
     <Wrapper>
       <Intro1Background>
@@ -159,7 +170,7 @@ const Home = () => {
               Get started with the easiest and most secure platform to buy,
               sell, trade, and earn stocks.
             </IntroSec1Paragraph>
-            <IntroSec1LeftBtn onClick={() => navigate('/signin')}>
+            <IntroSec1LeftBtn onClick={handleGetStarted}>
               <BullLogo />
               Get Started
             </IntroSec1LeftBtn>

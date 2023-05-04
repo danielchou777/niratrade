@@ -1,11 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 import api from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
+
+const Wrapper = styled.div``;
 
 const OrderBookWrapper = styled.div`
   width: 100%;
   // height: 200px;
-  padding: 1rem 2rem 1rem;
+  padding: 1rem 2rem 0rem;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -86,12 +89,32 @@ const Amount = styled.div`
   width: 80px;
 `;
 
+const MoreBtn = styled.div`
+  padding-right: 2rem;
+  padding-top: 0.5rem;
+  padding: 0.8rem 2rem 0;
+  color: #bdbcb9;
+  font-size: 0.9rem;
+  text-align: right;
+  cursor: pointer;
+
+  &:hover {
+    color: #fbc200;
+  }
+`;
+
 function OrderBooks(props) {
   const [buyOrderBook, setBuyOrderBook] = React.useState(null);
   const [sellOrderBook, setSellOrderBook] = React.useState(null);
 
   const thousandSeparator = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const navigate = useNavigate();
+
+  const handleMoreBtnClick = () => {
+    navigate(`/orderbook`);
   };
 
   React.useEffect(() => {
@@ -116,62 +139,69 @@ function OrderBooks(props) {
   }, [props.stock]);
 
   return (
-    <OrderBookWrapper>
-      <OrderBookTitle>Order Books</OrderBookTitle>
-      <OrderBook>
-        <OrderBookHeader>
-          <Price>Price(NTD)</Price>
-          <Amount>Amount</Amount>
-          <SubTotal>Total</SubTotal>
-        </OrderBookHeader>
-        {sellOrderBook && (
-          <>
-            {sellOrderBook.map((order, index) => {
-              if (sellOrderBook.length - index <= 5) {
-                return (
-                  <OrderWrapper key={order[0]} type='sell' quantity={order[1]}>
-                    <OrderPrice type='sell'>
-                      {thousandSeparator(order[0])}
-                    </OrderPrice>
-                    <OrderQty>{thousandSeparator(order[1])}</OrderQty>
-                    <SubTotal>
-                      {thousandSeparator(Number(order[0]) * Number(order[1]))}
-                    </SubTotal>
-                  </OrderWrapper>
-                );
-              }
-            })}
-          </>
-        )}
-      </OrderBook>
-      <OrderBook>
-        <OrderBookHeader>
-          <Price>Price(NTD)</Price>
-          <Amount>Amount</Amount>
-          <SubTotal>Total</SubTotal>
-        </OrderBookHeader>
-        {buyOrderBook && (
-          <>
-            {buyOrderBook.map((order, index) => {
-              if (index < 5) {
-                return (
-                  <OrderWrapper key={order[0]} type='buy' quantity={order[1]}>
-                    <OrderPrice type='buy'>
-                      {thousandSeparator(order[0])}
-                    </OrderPrice>
-                    <OrderQty>{thousandSeparator(order[1])}</OrderQty>
-                    <SubTotal>
-                      {thousandSeparator(Number(order[0]) * Number(order[1]))}
-                    </SubTotal>
-                  </OrderWrapper>
-                );
-              }
-            })}
-            {/* <Total>Buy: {getTotal(buyOrderBook)}</Total> */}
-          </>
-        )}
-      </OrderBook>
-    </OrderBookWrapper>
+    <Wrapper>
+      <OrderBookWrapper>
+        <OrderBookTitle>Order Books</OrderBookTitle>
+        <OrderBook>
+          <OrderBookHeader>
+            <Price>Price (NTD)</Price>
+            <Amount>Amount</Amount>
+            <SubTotal>Total</SubTotal>
+          </OrderBookHeader>
+          {sellOrderBook && (
+            <>
+              {sellOrderBook.map((order, index) => {
+                if (sellOrderBook.length - index <= 5) {
+                  return (
+                    <OrderWrapper
+                      key={order[0]}
+                      type='sell'
+                      quantity={order[1]}
+                    >
+                      <OrderPrice type='sell'>
+                        {thousandSeparator(order[0])}
+                      </OrderPrice>
+                      <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                      <SubTotal>
+                        {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                      </SubTotal>
+                    </OrderWrapper>
+                  );
+                }
+              })}
+            </>
+          )}
+        </OrderBook>
+        <OrderBook>
+          <OrderBookHeader>
+            <Price>Price (NTD)</Price>
+            <Amount>Amount</Amount>
+            <SubTotal>Total</SubTotal>
+          </OrderBookHeader>
+          {buyOrderBook && (
+            <>
+              {buyOrderBook.map((order, index) => {
+                if (index < 5) {
+                  return (
+                    <OrderWrapper key={order[0]} type='buy' quantity={order[1]}>
+                      <OrderPrice type='buy'>
+                        {thousandSeparator(order[0])}
+                      </OrderPrice>
+                      <OrderQty>{thousandSeparator(order[1])}</OrderQty>
+                      <SubTotal>
+                        {thousandSeparator(Number(order[0]) * Number(order[1]))}
+                      </SubTotal>
+                    </OrderWrapper>
+                  );
+                }
+              })}
+              {/* <Total>Buy: {getTotal(buyOrderBook)}</Total> */}
+            </>
+          )}
+        </OrderBook>
+      </OrderBookWrapper>
+      <MoreBtn onClick={handleMoreBtnClick}>More</MoreBtn>
+    </Wrapper>
   );
 }
 

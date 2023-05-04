@@ -8,6 +8,7 @@ import Signup from './pages/Signup/Signup';
 import Trade from './pages/Trade/Trade';
 import Wallet from './pages/Wallet/Wallet';
 import Home from './pages/Home/Home';
+import OrderBook from './pages/OrderBook/OrderBook';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -20,6 +21,7 @@ root.render(
         <Route path='wallet' element={<Wallet />} />
         <Route path='signin' element={<Signin />} />
         <Route path='signup' element={<Signup />} />
+        <Route path='orderbook' element={<OrderBook />} />
         <Route path='*' element={<Navigate to='/' replace />} />
       </Route>
     </Routes>

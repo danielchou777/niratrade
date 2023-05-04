@@ -7,8 +7,8 @@ import { UserContext } from './store/UserContext';
 import Header from './components/Header';
 import socketIOClient from 'socket.io-client';
 //TODO change to your own endpoint
-const ENDPOINT = 'https://www.danielchou.online';
-// const ENDPOINT = 'http://localhost:3000';
+// const ENDPOINT = 'https://www.danielchou.online';
+const ENDPOINT = 'http://localhost:3000';
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -30,6 +30,7 @@ const GlobalStyle = createGlobalStyle`
 
 function App() {
   const [user, setUser] = React.useState(null);
+  const [stock, setStock] = React.useState('DAN');
   const [refreshSocket, setRefreshSocket] = React.useState(0);
   const socketRef = React.useRef(null);
 
@@ -43,7 +44,9 @@ function App() {
   const socket = socketRef.current;
 
   return (
-    <UserContext.Provider value={{ user, setUser, refreshSocket, socket }}>
+    <UserContext.Provider
+      value={{ user, setUser, refreshSocket, socket, stock, setStock }}
+    >
       <Reset />
       <GlobalStyle />
       <>

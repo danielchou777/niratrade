@@ -105,7 +105,7 @@ function UserWallet(props) {
         <Balance>{userId}</Balance>
       </BalanceWrapper>
       <BalanceWrapper>
-        <BalanceTitle>Cash(NTD)</BalanceTitle>
+        <BalanceTitle>Cash (NTD)</BalanceTitle>
         <Balance> ${thousandSeparator(balance)}</Balance>
       </BalanceWrapper>
       <br></br>
