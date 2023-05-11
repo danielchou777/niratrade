@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
-import HC_more from 'highcharts/highcharts-more'; //module
-import darkUnica from 'highcharts/themes/dark-unica'; // Import the dark-unica theme
+import HC_more from 'highcharts/highcharts-more';
+import darkUnica from 'highcharts/themes/dark-unica';
 import { UserContext } from '../../store/UserContext';
 
 // import { data } from './data.js';
@@ -25,11 +25,6 @@ let ohlc = [],
     forced: true,
     enabled: true,
     units: [
-      // [
-      //   'millisecond', // unit name
-      //   [1, 2, 5, 10, 20, 25, 50, 100, 200, 500], // allowed multiples
-      // ],
-      // ['second', [1, 2, 5, 10, 15, 30]],
       ['minute', [1]],
       ['hour', [1, 3, 6, 12]],
       ['day', [1]],
@@ -207,15 +202,8 @@ const options = ([ohlcSort, volumeSort], stock, socket) => {
             ohlc.unshift(...newOhlc);
             volume.unshift(...newVolume);
 
-            console.log('new data loaded');
-            console.log(ohlc);
-            console.log(volume);
-
             const candlestickSeries = this.series[0];
             const volumeSeries = this.series[1];
-
-            console.log(candlestickSeries);
-            console.log(volumeSeries);
 
             this.setExtremes(e.min, e.max, true, true);
             candlestickSeries.update({
@@ -336,9 +324,6 @@ const MarketChart = React.memo((props) => {
         chartRef.current.chart.series[0].addPoint(data);
         chartRef.current.chart.series[1].addPoint(volumeData);
       }
-
-      console.log(ohlc);
-      console.log(volume);
     });
 
     return () => {

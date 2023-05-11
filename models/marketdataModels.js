@@ -2,7 +2,7 @@ import cache from '../utils/cache.js';
 import pool from '../utils/database.js';
 
 export const getBuyOrderBook = async (symbol) => {
-  let buyOrder = await cache.zrevrangebyscore(
+  const buyOrder = await cache.zrevrangebyscore(
     `buyOrderBook-${symbol}`,
     'inf',
     0,
@@ -14,7 +14,7 @@ export const getBuyOrderBook = async (symbol) => {
 
   const buyOrderBook = {};
 
-  for (let i = 0; i < buyOrder.length; i = i + 2) {
+  for (let i = 0; i < buyOrder.length; i += 2) {
     const quantity = buyOrder[i].split(':')[1];
     const price = Number(buyOrder[i + 1].slice(0, -12));
 
@@ -36,7 +36,7 @@ export const getBuyOrderBook = async (symbol) => {
 };
 
 export const getSellOrderBook = async (symbol) => {
-  let sellOrder = await cache.zrangebyscore(
+  const sellOrder = await cache.zrangebyscore(
     `sellOrderBook-${symbol}`,
     0,
     'inf',
@@ -48,7 +48,7 @@ export const getSellOrderBook = async (symbol) => {
 
   const sellOrderBook = {};
 
-  for (let i = 0; i < sellOrder.length; i = i + 2) {
+  for (let i = 0; i < sellOrder.length; i += 2) {
     const quantity = sellOrder[i].split(':')[1];
     const price = Number(sellOrder[i + 1].slice(0, -12));
 
@@ -70,9 +70,7 @@ export const getSellOrderBook = async (symbol) => {
 export const getExecutions = async (symbol) => {
   let executions = await cache.lrange(`executions-${symbol}`, 0, -1);
 
-  executions = executions.map((execution) => {
-    return JSON.parse(execution);
-  });
+  executions = executions.map((execution) => JSON.parse(execution));
 
   return executions;
 };
@@ -98,6 +96,7 @@ export const getPreviousClosePrice = async (symbol, time) => {
 };
 
 // create a new row with the current timestamp, and update the OHLC values with the close price of the previous minute
+
 export const createNewMarketDataRow = async (symbol, time) => {
   const [rows] = await pool.query(
     'INSERT INTO market_data (symbol, unix_timestamp, open, high, low, close, volume ) VALUES (?, ?, ?, ?, ?, ?, 0)',
@@ -116,7 +115,7 @@ export const updateMarketDataEveryMinute = async (
     [symbol, time]
   );
 
-  //if the close price is null, then it means that the row has not been updated yet
+  // if the close price is null, then it means that the row has not been updated yet
   if (!rows[0]) {
     return;
   }
@@ -238,10 +237,10 @@ export const getStockPrices = async () => {
   const stockPrices = {};
 
   for (let i = 0; i < stocks.length; i++) {
-    const symbol = stocks[i].symbol;
+    const { symbol } = stocks[i];
     let execution = await cache.lrange(`executions-${symbol}`, 0, 0);
     execution = JSON.parse(execution[0]);
-    const stockPrice = execution.stockPrice;
+    const { stockPrice } = execution;
     stockPrices[symbol] = stockPrice;
   }
 

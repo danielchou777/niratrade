@@ -5,10 +5,10 @@ import https from 'https';
 const ip = 'https://www.danielchou.online/api/1.0/match/order';
 
 const jwtToken =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODI5Mjg4OTgsImV4cCI6MTY4MzI4ODg5OH0.WIrnjELrvCOMGUSJLXlKF1xZiRkZNE7C1Rpqgc9v-GI';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImVtYWlsIjoidGVzdEBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MjhiZDc4ZS04ODMzLTQ0YmItODQ4OC05MTdiNzBhZjQ3NzMiLCJpYXQiOjE2ODM1MDM4ODgsImV4cCI6MTY4Mzg2Mzg4OH0.o1seWSGm1e3gKOF92va0gX5NoKFf25G8fK7xCxAEuWk';
 
 const randomOrder1 = async () => {
-  const price = 70 + Math.floor(Math.random() * 80);
+  const price = 70 + Math.floor(Math.random() * 120);
   const quantity = 1 + Math.floor(Math.random() * 14);
   await axios.post(
     ip,
@@ -37,7 +37,7 @@ const randomOrder1 = async () => {
 };
 
 const randomOrder2 = async () => {
-  const price = 70 + Math.floor(Math.random() * 80);
+  const price = 70 + Math.floor(Math.random() * 120);
   const quantity = 1 + Math.floor(Math.random() * 14);
 
   await axios.post(

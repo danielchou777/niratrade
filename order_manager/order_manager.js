@@ -19,8 +19,8 @@ const time = 2208960000000; // 2040-01-01 00:00:00
 
 await producer.connect();
 
-const server = net.createServer(async function (socket) {
-  socket.on('data', async function (data) {
+const server = net.createServer(async (socket) => {
+  socket.on('data', async (data) => {
     let { symbol, userId, price, quantity, type, side, status, orderIdCancel } =
       JSON.parse(data);
 
@@ -51,7 +51,7 @@ const server = net.createServer(async function (socket) {
       }
 
       console.log('success cancel order: ', orderIdCancel);
-      socket.write('receive cancel order: ' + orderIdCancel);
+      socket.write(`receive cancel order: ${orderIdCancel}`);
 
       const data = {
         stockAmount: `c:${side}:${quantity}:${orderIdCancel}:${userId}:${symbol}:${price}`,
@@ -149,10 +149,10 @@ const server = net.createServer(async function (socket) {
       );
     }
 
-    socket.write('order received', function () {});
+    socket.write('order received', () => {});
   });
 });
 
-server.listen(8124, function () {
+server.listen(8124, () => {
   console.log('TCP Server start');
 });
