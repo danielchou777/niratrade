@@ -9,7 +9,7 @@ import {
   setUserLockedBalance,
   setUserLockedStock,
   getCancelOrderInfo,
-} from '../models/orderManagerModels.js';
+} from '../../models/orderManagerModels.js';
 
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];

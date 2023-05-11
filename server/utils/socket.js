@@ -31,7 +31,7 @@ export const createSocketServer = (server) => {
     });
 
     socket.on('users', async (data) => {
-      const users = [...new Set(data.map((item) => item))]; // [ 'A', 'B']
+      const users = [...new Set(data.map((item) => item))];
 
       for (let i = 0; i < users.length; i++) {
         io.emit(`user-${users[i]}`, { data: 'updated' });

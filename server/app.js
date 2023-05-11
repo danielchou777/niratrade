@@ -2,9 +2,10 @@ import 'express-async-errors';
 
 // express
 import express from 'express';
-const app = express();
 
 // routes
+import cors from 'cors';
+import { createServer } from 'http';
 import matchRouter from './router/matchRoutes.js';
 import marketdataRouter from './router/marketdataRoutes.js';
 import userdataRouter from './router/userdataRoutes.js';
@@ -13,12 +14,13 @@ import userAuthRouter from './router/userAuthRoutes.js';
 // middleware
 import notFound from './middleware/notFound.js';
 import errorHandler from './middleware/errorHandler.js';
-import cors from 'cors';
 import jwtVerification from './middleware/jwtVerification.js';
 
 // Socket Initialization
-import { createServer } from 'http';
 import { createSocketServer } from './utils/socket.js';
+
+const app = express();
+
 const server = createServer(app);
 // Socket 設定
 createSocketServer(server);
@@ -43,5 +45,5 @@ app.use(errorHandler);
 const port = process.env.PORT || 3000;
 
 server.listen(port, () => {
-  console.log(`Server is listening on port ${port}...`);
+  console.debug(`Server is listening on port ${port}...`);
 });

@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import Error from '../errors/index.js';
 import { isTokenValid } from '../utils/util.js';
 

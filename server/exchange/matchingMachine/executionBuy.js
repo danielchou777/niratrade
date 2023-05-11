@@ -1,13 +1,13 @@
-import cache from '../utils/cache.js';
+import cache from '../../utils/cache.js';
 import {
   updateOrder,
   updateUserStock,
   updateUserBalance,
   insertExecution,
-} from '../models/orderManagerModels.js';
+} from '../../models/orderManagerModels.js';
 
-import { updateMarketData } from '../models/marketdataModels.js';
-import { roundToMinute } from '../utils/util.js';
+import { updateMarketData } from '../../models/marketdataModels.js';
+import { roundToMinute } from '../../utils/util.js';
 
 const updateUserTables = async (
   buyUserId,
@@ -35,14 +35,15 @@ const buyExecution = async (
   stockAmount,
   pushExecutions,
   stockSymbol
+  // eslint-disable-next-line consistent-return
 ) => {
-  let isExecuted = false;
+  const isExecuted = false;
   const broadcastUsers = [];
 
   while (!isExecuted) {
     const date = roundToMinute(new Date());
 
-    let sellOrder = await cache.zrangebyscore(
+    const sellOrder = await cache.zrangebyscore(
       `sellOrderBook-${stockSymbol}`,
       0,
       'inf',
@@ -72,15 +73,15 @@ const buyExecution = async (
       return broadcastUsers;
     }
 
-    let sellOrderAmount = Number(sellOrder[0].split(':')[1]);
-    let sellOrderId = sellOrder[0].split(':')[2];
-    let sellUserId = sellOrder[0].split(':')[3];
+    const sellOrderAmount = Number(sellOrder[0].split(':')[1]);
+    const sellOrderId = sellOrder[0].split(':')[2];
+    const sellUserId = sellOrder[0].split(':')[3];
 
     let buyOrderAmount = Number(stockAmount.split(':')[1]);
-    let buyOrderId = stockAmount.split(':')[2];
-    let buyUserId = stockAmount.split(':')[3];
+    const buyOrderId = stockAmount.split(':')[2];
+    const buyUserId = stockAmount.split(':')[3];
 
-    let symbol = stockAmount.split(':')[4];
+    const symbol = stockAmount.split(':')[4];
 
     // if sell order amount is greater than buy order amount, update sell order book and break
     if (sellOrderAmount > buyOrderAmount) {
@@ -132,7 +133,7 @@ const buyExecution = async (
     }
 
     // if sell order amount is equal to buy order amount, remove from sell order book and break
-    if (sellOrderAmount == buyOrderAmount) {
+    if (sellOrderAmount === buyOrderAmount) {
       // update sell order status to filled
       // update buy order status to filled
 

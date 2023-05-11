@@ -6,6 +6,7 @@ import {
   marketChart,
   getAllStockPrices,
 } from '../controllers/marketdataControllers.js';
+
 const router = Router();
 
 router.get('/orderBook', orderBook);

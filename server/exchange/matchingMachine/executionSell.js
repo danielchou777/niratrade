@@ -1,13 +1,13 @@
-import cache from '../utils/cache.js';
+import cache from '../../utils/cache.js';
 import {
   updateOrder,
   updateUserStock,
   updateUserBalance,
   insertExecution,
-} from '../models/orderManagerModels.js';
+} from '../../models/orderManagerModels.js';
 
-import { updateMarketData } from '../models/marketdataModels.js';
-import { roundToMinute } from '../utils/util.js';
+import { updateMarketData } from '../../models/marketdataModels.js';
+import { roundToMinute } from '../../utils/util.js';
 
 const updateUserTables = async (
   buyUserId,
@@ -34,14 +34,15 @@ const sellExecution = async (
   stockAmount,
   pushExecutions,
   stockSymbol
+  // eslint-disable-next-line consistent-return
 ) => {
-  let isExecuted = false;
+  const isExecuted = false;
   const broadcastUsers = [];
 
   while (!isExecuted) {
     const date = roundToMinute(new Date());
 
-    let buyOrder = await cache.zrevrangebyscore(
+    const buyOrder = await cache.zrevrangebyscore(
       `buyOrderBook-${stockSymbol}`,
       'inf',
       0,
@@ -71,15 +72,15 @@ const sellExecution = async (
       return broadcastUsers;
     }
 
-    let buyOrderAmount = Number(buyOrder[0].split(':')[1]);
-    let buyOrderId = buyOrder[0].split(':')[2];
-    let buyUserId = buyOrder[0].split(':')[3];
+    const buyOrderAmount = Number(buyOrder[0].split(':')[1]);
+    const buyOrderId = buyOrder[0].split(':')[2];
+    const buyUserId = buyOrder[0].split(':')[3];
 
     let sellOrderAmount = Number(stockAmount.split(':')[1]);
-    let sellOrderId = stockAmount.split(':')[2];
-    let sellUserId = stockAmount.split(':')[3];
+    const sellOrderId = stockAmount.split(':')[2];
+    const sellUserId = stockAmount.split(':')[3];
 
-    let symbol = stockAmount.split(':')[4];
+    const symbol = stockAmount.split(':')[4];
 
     // if buy order amount is greater than sell order amount, update buy order book and break
     if (buyOrderAmount > sellOrderAmount) {
@@ -130,7 +131,7 @@ const sellExecution = async (
     }
 
     // if buy order amount is equal to sell order amount, remove from buy order book and break
-    if (buyOrderAmount == sellOrderAmount) {
+    if (buyOrderAmount === sellOrderAmount) {
       // update buy order status to filled
       // update sell order status to filledupdateOrder(sellOrderId, 'filled', 0);
       await Promise.all([

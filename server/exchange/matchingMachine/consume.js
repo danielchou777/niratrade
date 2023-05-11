@@ -1,26 +1,29 @@
-import cache from '../utils/cache.js';
-
 // kafka
 import { Kafka } from 'kafkajs';
-const clientId = 'my-app';
-const brokers = ['localhost:9092'];
-// const topic = 'stock-DAN';
-const stocks = ['DAN', 'APPL'];
-const kafka = new Kafka({ clientId, brokers });
 
 // socket.io
 import socketIOClient from 'socket.io-client';
-const ENDPOINT = 'http://localhost:3000';
-const socketio = socketIOClient(ENDPOINT);
+import cache from '../../utils/cache.js';
 
-import buyExecution from './execution_buy.js';
-import sellExecution from './execution_sell.js';
-import { getUnfilledQuantity } from '../models/marketdataModels.js';
+import buyExecution from './executionBuy.js';
+import sellExecution from './executionSell.js';
+import { getUnfilledQuantity } from '../../models/marketdataModels.js';
 import {
   updateCancelOrder,
   updateUserLockedBalance,
   updateUserLockedStock,
-} from '../models/orderManagerModels.js';
+} from '../../models/orderManagerModels.js';
+
+const clientId = 'my-app';
+const brokers = ['localhost:9092'];
+const kafka = new Kafka({ clientId, brokers });
+
+const ENDPOINT =
+  process.env.CACHE_ENV === 'production'
+    ? 'http://172.31.14.46:3000'
+    : 'http://localhost:3000';
+
+const socketio = socketIOClient(ENDPOINT);
 
 // create a new consumer from the kafka client, and set its group ID
 
@@ -58,11 +61,12 @@ await consumer.subscribe({ topics: ['stock-DAN', 'stock-APPL'] });
 
 await consumer.run({
   eachMessage: async ({ message, topic, partition }) => {
-    let { stockAmount, stockPriceOrder } = JSON.parse(message.value);
+    const { stockAmount, stockPriceOrder } = JSON.parse(message.value);
     let broadcastUsers = [];
     const stock = topic.split('-')[1];
 
-    console.log('reads: ', stockAmount, stockPriceOrder);
+    // eslint-disable-next-line no-console
+    console.debug('reads: ', stockAmount, stockPriceOrder);
 
     if (stockAmount.split(':')[0] === 'c') {
       const side = stockAmount.split(':')[1];
@@ -75,14 +79,11 @@ await consumer.run({
       // if buy side, remove from buyOrders cache
       if (side === 'b') {
         const stockCacheInfo = `b:${unfilledQauntity}:${orderIdCancel}:${userId}:${symbol}`;
-        console.log(`buyOrderBook-${symbol}`);
-        console.log(stockCacheInfo);
+
         await cache.zrem(`buyOrderBook-${symbol}`, stockCacheInfo);
 
         // update order status to 4
         await updateCancelOrder(orderIdCancel, '4');
-
-        console.log(price, unfilledQauntity);
 
         // update user balance
         await updateUserLockedBalance(userId, -price * unfilledQauntity);

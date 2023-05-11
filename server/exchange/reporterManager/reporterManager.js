@@ -4,7 +4,7 @@ import {
   createNewMarketDataRow,
   updateMarketDataEveryMinute,
   moveRowToTodayHistory,
-} from '../models/marketdataModels.js';
+} from '../../models/marketdataModels.js';
 
 const stocks = ['DAN', 'APPL'];
 
