@@ -1,31 +1,24 @@
-// kafka
 import { Kafka } from 'kafkajs';
 
-// socket.io
 import socketIOClient from 'socket.io-client';
 import cache from '../../utils/cache.js';
 
 import buyExecution from './executionBuy.js';
 import sellExecution from './executionSell.js';
-import { getUnfilledQuantity } from '../../models/marketdataModels.js';
-import {
-  updateCancelOrder,
-  updateUserLockedBalance,
-  updateUserLockedStock,
-} from '../../models/orderManagerModels.js';
+import cancelExecution from './executionCancel.js';
 
+// kafka setup
 const clientId = 'my-app';
 const brokers = ['localhost:9092'];
 const kafka = new Kafka({ clientId, brokers });
 
+// socket io setup
 const ENDPOINT =
   process.env.CACHE_ENV === 'production'
     ? 'http://172.31.14.46:3000'
     : 'http://localhost:3000';
 
 const socketio = socketIOClient(ENDPOINT);
-
-// create a new consumer from the kafka client, and set its group ID
 
 async function pushExecutions(
   orderType,
@@ -50,6 +43,7 @@ async function pushExecutions(
   }
 }
 
+// create a new consumer from the kafka client, and set its group ID
 const consumer = kafka.consumer({
   groupId: clientId,
   maxInFlightRequests: 1,
@@ -65,43 +59,8 @@ await consumer.run({
     let broadcastUsers = [];
     const stock = topic.split('-')[1];
 
-    // eslint-disable-next-line no-console
-    console.debug('reads: ', stockAmount, stockPriceOrder);
-
     if (stockAmount.split(':')[0] === 'c') {
-      const side = stockAmount.split(':')[1];
-      const orderIdCancel = stockAmount.split(':')[3];
-      const unfilledQauntity = await getUnfilledQuantity(orderIdCancel);
-      const userId = stockAmount.split(':')[4];
-      const symbol = stockAmount.split(':')[5];
-      const price = stockAmount.split(':')[6];
-
-      // if buy side, remove from buyOrders cache
-      if (side === 'b') {
-        const stockCacheInfo = `b:${unfilledQauntity}:${orderIdCancel}:${userId}:${symbol}`;
-
-        await cache.zrem(`buyOrderBook-${symbol}`, stockCacheInfo);
-
-        // update order status to 4
-        await updateCancelOrder(orderIdCancel, '4');
-
-        // update user balance
-        await updateUserLockedBalance(userId, -price * unfilledQauntity);
-      }
-
-      // if sell side, remove from sellOrders cache
-      if (side === 's') {
-        const stockCacheInfo = `s:${unfilledQauntity}:${orderIdCancel}:${userId}:${symbol}`;
-        await cache.zrem(`sellOrderBook-${symbol}`, stockCacheInfo);
-
-        // update order status to 4
-        await updateCancelOrder(orderIdCancel, '4');
-
-        // update user balance
-        await updateUserLockedStock(userId, symbol, -unfilledQauntity);
-      }
-
-      broadcastUsers.push(userId);
+      broadcastUsers = await cancelExecution(stockAmount);
     }
 
     const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
@@ -125,6 +84,9 @@ await consumer.run({
         stock
       );
     }
+
+    // eslint-disable-next-line no-console
+    console.debug(new Date(), 'executed: ', stockAmount, stockPriceOrder);
 
     // Commit the offset for the processed message
     await consumer.commitOffsets([

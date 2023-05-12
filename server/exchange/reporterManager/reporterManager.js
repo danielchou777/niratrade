@@ -11,7 +11,6 @@ const stocks = ['DAN', 'APPL'];
 const createEmptyRowWithOHLC = async (symbol) => {
   // Get the close price of the previous minute
   const now = new Date();
-  console.log(now);
   now.setSeconds(0);
   now.setMilliseconds(0);
   now.setMinutes(now.getMinutes() - 1);
@@ -22,8 +21,6 @@ const createEmptyRowWithOHLC = async (symbol) => {
     unixTimePreviousMin
   );
 
-  console.log(previousClosePrice);
-
   await moveRowToTodayHistory(symbol, unixTimePreviousMin);
 
   if (!previousClosePrice) {
@@ -33,7 +30,7 @@ const createEmptyRowWithOHLC = async (symbol) => {
   now.setMinutes(now.getMinutes() + 1);
   const unixTime = Math.floor(now.getTime() / 1000);
 
-  console.log(unixTime);
+  console.debug(now, unixTime, 'previous close price', previousClosePrice);
 
   await updateMarketDataEveryMinute(previousClosePrice, symbol, unixTime);
 

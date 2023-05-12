@@ -1,7 +1,7 @@
 import pool from '../utils/database.js';
 
 export const getUserByEmail = async (email) => {
-  const [rows] = await pool.query(`SELECT * FROM user WHERE email = ?`, [
+  const [rows] = await pool.query('SELECT * FROM user WHERE email = ?', [
     email,
   ]);
   return rows;
@@ -10,7 +10,7 @@ export const getUserByEmail = async (email) => {
 export const createUser = async (userId, name, email, password) => {
   // insert user
   await pool.query(
-    `INSERT INTO user (user_id, name, email, password, balance, locked_balance) VALUES (?, ?, ?, ?, 10000, 0)`,
+    'INSERT INTO user (user_id, name, email, password, balance, locked_balance) VALUES (?, ?, ?, ?, 10000, 0)',
     [userId, name, email, password]
   );
 
@@ -23,9 +23,7 @@ export const createUser = async (userId, name, email, password) => {
 
   // insert user_stock, set default quantity = 0
   await pool.query(
-    `INSERT INTO user_stock (user_id, symbol, quantity, locked_quantity) VALUES ?`,
+    'INSERT INTO user_stock (user_id, symbol, quantity, locked_quantity) VALUES ?',
     [userStocks]
   );
-
-  return;
 };

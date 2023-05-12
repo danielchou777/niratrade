@@ -96,9 +96,8 @@ export const getPreviousClosePrice = async (symbol, time) => {
 };
 
 // create a new row with the current timestamp, and update the OHLC values with the close price of the previous minute
-
 export const createNewMarketDataRow = async (symbol, time) => {
-  const [rows] = await pool.query(
+  await pool.query(
     'INSERT INTO market_data (symbol, unix_timestamp, open, high, low, close, volume ) VALUES (?, ?, ?, ?, ?, ?, 0)',
     [symbol, time, null, null, null, null]
   );
@@ -207,19 +206,6 @@ export const moveRowToTodayHistory = async (symbol, time) => {
   );
 };
 
-export const getMarketDataHistory = async (symbol) => {
-  let [rows] = await pool.query(
-    'SELECT * FROM market_data_today WHERE symbol = ? ORDER BY unix_timestamp DESC LIMIT 720',
-    [symbol]
-  );
-
-  rows = rows.reverse();
-
-  const latestMarketData = await getLastestChartData(symbol);
-  rows.push(latestMarketData);
-  return rows;
-};
-
 export const getMarketDataDynamicHistory = async (symbol, time) => {
   let [rows] = await pool.query(
     'SELECT * FROM market_data_today WHERE symbol = ? AND unix_timestamp < ? ORDER BY unix_timestamp DESC LIMIT 720',
@@ -262,4 +248,17 @@ export const getLastestChartData = async (symbol) => {
     [symbol]
   );
   return rows[0];
+};
+
+export const getMarketDataHistory = async (symbol) => {
+  let [rows] = await pool.query(
+    'SELECT * FROM market_data_today WHERE symbol = ? ORDER BY unix_timestamp DESC LIMIT 720',
+    [symbol]
+  );
+
+  rows = rows.reverse();
+
+  const latestMarketData = await getLastestChartData(symbol);
+  rows.push(latestMarketData);
+  return rows;
 };

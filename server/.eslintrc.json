@@ -20,6 +20,8 @@
         "camelcase":"off",
         "prefer-destructuring": "off",
         "indent": "off",
+        "max-len": "off",
+        "no-plusplus": "off",
         // "no-param-reassign":"off",
         // "no-unused-vars": "off",
         "no-await-in-loop": "off"
