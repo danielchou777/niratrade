@@ -6,7 +6,10 @@ import {
   insertExecution,
 } from '../../models/orderManagerModels.js';
 
-import { updateMarketData } from '../../models/marketdataModels.js';
+import {
+  updateMarketData,
+  addExecutions,
+} from '../../models/marketdataModels.js';
 import { roundToMinute } from '../../utils/util.js';
 
 const updateUserTables = async (
@@ -32,7 +35,6 @@ const sellExecution = async (
   stockPrice,
   stockPriceOrder,
   stockAmount,
-  pushExecutions,
   stockSymbol
   // eslint-disable-next-line consistent-return
 ) => {
@@ -117,7 +119,7 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions(
+      addExecutions(
         'sell',
         buyOrderPrice,
         sellOrderAmount,
@@ -158,7 +160,7 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions(
+      addExecutions(
         'sell',
         buyOrderPrice,
         sellOrderAmount,
@@ -202,7 +204,7 @@ const sellExecution = async (
         buyOrderPrice
       );
 
-      pushExecutions(
+      addExecutions(
         'sell',
         buyOrderPrice,
         buyOrderAmount,

@@ -75,6 +75,29 @@ export const getExecutions = async (symbol) => {
   return executions;
 };
 
+export const addExecutions = async (
+  orderType,
+  stockPrice,
+  amount,
+  time,
+  stockSymbol
+) => {
+  await cache.lpush(
+    `executions-${stockSymbol}`,
+    JSON.stringify({
+      orderType,
+      stockPrice,
+      amount,
+      time,
+    })
+  );
+
+  const executionsLenth = await cache.llen(`executions-${stockSymbol}`);
+  if (executionsLenth > 30) {
+    await cache.ltrim(`executions-${stockSymbol}`, 0, 29);
+  }
+};
+
 export const getStocks = async () => {
   const [rows] = await pool.query('SELECT symbol, name  FROM stock');
 

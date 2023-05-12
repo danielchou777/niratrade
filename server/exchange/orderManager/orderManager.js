@@ -54,7 +54,7 @@ const server = net.createServer(async (socket) => {
       socket.write(`receive cancel order: ${orderIdCancel}`);
 
       const data = {
-        stockAmount: `c:${side}:${quantity}:${orderIdCancel}:${userId}:${symbol}:${price}`,
+        orderDetails: `c:${side}:${quantity}:${orderIdCancel}:${userId}:${symbol}:${price}`,
       };
 
       await producer.send({
@@ -103,7 +103,7 @@ const server = net.createServer(async (socket) => {
       await setUserLockedBalance(userId, price * quantity);
 
       const data = {
-        stockAmount: `b:${quantity}:${orderId}:${userId}:${symbol}`,
+        orderDetails: `b:${quantity}:${orderId}:${userId}:${symbol}`,
         stockPriceOrder: `${price}${time - Date.now()}`,
       };
 
@@ -128,7 +128,7 @@ const server = net.createServer(async (socket) => {
       await setUserLockedStock(userId, symbol, quantity);
 
       const data = {
-        stockAmount: `s:${quantity}:${orderId}:${userId}:${symbol}`,
+        orderDetails: `s:${quantity}:${orderId}:${userId}:${symbol}`,
         stockPriceOrder: `${price}${Date.now() - 1000000000000}`,
       };
 
