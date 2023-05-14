@@ -10,6 +10,9 @@ import {
   updateMarketData,
   addExecutions,
 } from '../../models/marketdataModels.js';
+
+import orderStatus from '../../constants/orderStatus.js';
+
 import { roundToMinute } from '../../utils/util.js';
 
 const updateUserTables = async (
@@ -98,8 +101,12 @@ const buyExecution = async (
           }:${sellOrderId}:${sellUserId}:${symbol}`,
         ]),
         cache.zrem(`sellOrderBook-${stockSymbol}`, sellOrder[0]),
-        updateOrder(sellOrderId, '1', sellOrderAmount - buyOrderAmount),
-        updateOrder(buyOrderId, '2', 0),
+        updateOrder(
+          sellOrderId,
+          orderStatus.partiallyFilled,
+          sellOrderAmount - buyOrderAmount
+        ),
+        updateOrder(buyOrderId, orderStatus.filled, 0),
         insertExecution(
           buyOrderId,
           sellOrderId,
@@ -141,8 +148,8 @@ const buyExecution = async (
 
       await Promise.all([
         cache.zrem(`sellOrderBook-${stockSymbol}`, sellOrder[0]),
-        updateOrder(sellOrderId, '2', 0),
-        updateOrder(buyOrderId, '2', 0),
+        updateOrder(sellOrderId, orderStatus.filled, 0),
+        updateOrder(buyOrderId, orderStatus.filled, 0),
         insertExecution(
           buyOrderId,
           sellOrderId,
@@ -188,8 +195,8 @@ const buyExecution = async (
 
       await Promise.all([
         cache.zrem(`sellOrderBook-${stockSymbol}`, sellOrder[0]),
-        updateOrder(sellOrderId, '2', 0),
-        updateOrder(buyOrderId, '1', buyOrderAmount),
+        updateOrder(sellOrderId, orderStatus.filled, 0),
+        updateOrder(buyOrderId, orderStatus.partiallyFilled, buyOrderAmount),
         insertExecution(
           buyOrderId,
           sellOrderId,

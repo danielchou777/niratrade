@@ -7,13 +7,13 @@ import {
   updateUserLockedStock,
 } from '../../models/orderManagerModels.js';
 
-export default async function cancelExecution(stockAmount) {
-  const side = stockAmount.split(':')[1];
-  const orderIdCancel = stockAmount.split(':')[3];
+export default async function cancelExecution(orderDetails) {
+  const side = orderDetails.split(':')[1];
+  const orderIdCancel = orderDetails.split(':')[3];
   const unfilledQauntity = await getUnfilledQuantity(orderIdCancel);
-  const userId = stockAmount.split(':')[4];
-  const symbol = stockAmount.split(':')[5];
-  const price = stockAmount.split(':')[6];
+  const userId = orderDetails.split(':')[4];
+  const symbol = orderDetails.split(':')[5];
+  const price = orderDetails.split(':')[6];
 
   // if buy side, remove from buyOrders cache
   if (side === 'b') {

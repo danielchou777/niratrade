@@ -36,7 +36,7 @@ async function processOrder(
   { socketio },
   consumer
 ) {
-  // stock Amount Info [side]:[amount]:[orderId]:[userId]:[symbol]
+  // order details Info [side]:[amount]:[orderId]:[userId]:[symbol]
   const { orderDetails, stockPriceOrder } = JSON.parse(message.value);
   const stockPrice = Math.floor(stockPriceOrder / 1000000000000);
   const stock = topic.split('-')[1];
@@ -65,7 +65,7 @@ async function processOrder(
     );
   }
 
-  console.debug(new Date(), 'executed: ', orderDetails, stockPriceOrder);
+  console.debug(new Date(), 'executed:', orderDetails, stockPriceOrder);
 
   // Commit the offset for the processed message
   await consumer.commitOffsets([
