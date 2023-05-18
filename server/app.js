@@ -47,3 +47,5 @@ const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.debug(`Server is listening on port ${port}...`);
 });
+
+export default app;
