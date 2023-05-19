@@ -2,18 +2,6 @@
 
 An interactive stock exchange platform empowers users to execute trades rapidly, monitor real-time market data, and review their portfolio holdings.
 
-## Demo Account
-Website URL: https://www.niratrade.online/
-
-Demo Account
-- Account: test123@gmail.com
-- Password: 12345678
-
-## ![Preview](./client/src/images/readme/preview.png)
-
-
-
-
 ## Table of Contents
 
 - [Demo Account](#Demo-Account)
@@ -23,43 +11,42 @@ Demo Account
 - [Technologies](#Technologies)
 - [Contact](#Contact)
 
+## Demo Account
+Website URL: https://www.niratrade.online/
 
+Demo Account
+- Account: test123@gmail.com
+- Password: 12345678
+
+## ![Preview](./client/src/images/readme/preview.png)
 
 ## Features
+- Realtime updates Order Books:
+  - The initial order book displays a limited number of 5 orders.
+  - After clicking "read more," the complete order book is displayed, showcasing the full list of available orders.
+- Realtime updates Candlestick Chart:
+  - Enable candlestick charts with multiple time ranges for comprehensive analysis.
+  - Provide detailed information on the open, high, low, and close prices for each candlestick.
+- Execution
+  - By default, the initial execution displays all market-executed trades.
+  - After clicking "My Trades," you can view your own executed trades. 
+- Open Orders
+  - At the bottom of the trade page, you can find detailed information about your open orders. 
+  - You can cancel an open order by simply clicking on the garbage can icon associated with that specific order.
+- Portforlio
+  - You can access and view your portfolio by clicking on the "Wallet" page.
+- History Orders
+  - You can locate your history orders by selecting stocks, status, and side options at the bottom of the trade page.
 
-### Stock Info & Selection Bar
-
-### Candlestick Chart
-
-### Order Books
-
-### Execution 
+### Order Books & Candlestick Chart & Execution 
+![Order Books, Charts & Execution](./client/src/images/readme/record1.gif)
 
 ### Open Orders
-
-### Profolio
-
-### History Orders
-
-- Time Period:
-  - The time period user commutes
-- Commute Time:
-  - The commute time expected to spend every day
-- Transit Mode
-  - Supported transits:
-    1. Taipei Metro system
-    2. Bus network of Greater Taipei Area
-- Maximum Walking Distance
-  - The maximum distance commuters willing to walk, including the following:
-    1. from the apartment to the first transit station
-    2. walking distance during transfer
-    3. from the last transit station to office
-- House Type
-- Budget
-- Other Preference
+![Open Orders](./client/src/images/readme/record2.gif)
 
 
-![Apartment Searching](./public/assets/readme/search.gif)
+### Profolio & History Orders
+![Portfolio & History Orders](./client/src/images/readme/record3.gif)
 
 
 ## Architecture
@@ -108,7 +95,6 @@ Demo Account
 - HTTPS
 - SSL
 - Domain Name System (DNS)
-- Route
 
 ### Test
 
@@ -116,21 +102,14 @@ Demo Account
 
 ### Others
 
+- Socket.IO
 - RESTful APIs
 - Design Pattern: MVC
 - Version Control: Git & GitHub
 - Scrum: Trello
 - Linter: Prettier & ESLint
 
-### Data Source
-
-- [Public Transport Data Exchange Platform](https://ptx.transportdata.tw)
-- [https://rent.591.com.tw](https://rent.591.com.tw/)
-
-
-
-
 
 ## Contact
 
-Gideon Pan @ s00971052s@gmail.com
+Daniel (Yi-chen) Chou @ danielchou777@gmail.com
