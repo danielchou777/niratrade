@@ -34,7 +34,7 @@ const updateUserTables = async (
 const sellExecution = async (
   stockPrice,
   stockPriceOrder,
-  stockAmount,
+  orderDetails,
   stockSymbol
   // eslint-disable-next-line consistent-return
 ) => {
@@ -60,7 +60,7 @@ const sellExecution = async (
     if (buyOrder.length === 0) {
       await cache.zadd(`sellOrderBook-${stockSymbol}`, [
         stockPriceOrder,
-        stockAmount,
+        orderDetails,
       ]);
       return broadcastUsers;
     }
@@ -69,7 +69,7 @@ const sellExecution = async (
     if (buyOrderPrice < stockPrice) {
       await cache.zadd(`sellOrderBook-${stockSymbol}`, [
         stockPriceOrder,
-        stockAmount,
+        orderDetails,
       ]);
       return broadcastUsers;
     }
@@ -78,11 +78,11 @@ const sellExecution = async (
     const buyOrderId = buyOrder[0].split(':')[2];
     const buyUserId = buyOrder[0].split(':')[3];
 
-    let sellOrderAmount = Number(stockAmount.split(':')[1]);
-    const sellOrderId = stockAmount.split(':')[2];
-    const sellUserId = stockAmount.split(':')[3];
+    let sellOrderAmount = Number(orderDetails.split(':')[1]);
+    const sellOrderId = orderDetails.split(':')[2];
+    const sellUserId = orderDetails.split(':')[3];
 
-    const symbol = stockAmount.split(':')[4];
+    const symbol = orderDetails.split(':')[4];
 
     // if buy order amount is greater than sell order amount, update buy order book and break
     if (buyOrderAmount > sellOrderAmount) {
@@ -214,7 +214,7 @@ const sellExecution = async (
 
       broadcastUsers.push(buyUserId);
 
-      stockAmount = `s:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
+      orderDetails = `s:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
     }
   }
 };
