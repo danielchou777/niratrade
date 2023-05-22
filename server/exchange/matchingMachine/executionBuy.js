@@ -12,10 +12,23 @@ import {
 import orderStatus from '../../constants/orderStatus.js';
 import { roundToMinute } from '../../utils/util.js';
 
-const updateUserTables = async (userId, symbol, amount, price) => {
+const updateSellUserTables = async (userId, symbol, amount, price) => {
   await Promise.all([
     updateUserBalance(userId, price * amount),
     updateUserStock(userId, symbol, amount),
+  ]);
+};
+
+const updateBuyUserTables = async (
+  userId,
+  symbol,
+  amount,
+  sellPrice,
+  buyPrice
+) => {
+  await Promise.all([
+    updateUserBalance(userId, -sellPrice * amount, -buyPrice * amount),
+    updateUserStock(userId, symbol, -amount),
   ]);
 };
 
@@ -86,7 +99,19 @@ const processBuyOrder = async (
           buyOrderAmount
         ),
         updateMarketData(symbol, sellOrderPrice, date, buyOrderAmount),
-        updateUserTables(buyUserId, symbol, buyOrderAmount, sellOrderPrice),
+        updateSellUserTables(
+          sellUserId,
+          symbol,
+          buyOrderAmount,
+          sellOrderPrice
+        ),
+        updateBuyUserTables(
+          buyUserId,
+          symbol,
+          buyOrderAmount,
+          sellOrderPrice,
+          stockPrice
+        ),
         addExecutions(
           'buy',
           sellOrderPrice,
@@ -116,7 +141,19 @@ const processBuyOrder = async (
           buyOrderAmount
         ),
         updateMarketData(symbol, sellOrderPrice, date, buyOrderAmount),
-        updateUserTables(buyUserId, symbol, buyOrderAmount, sellOrderPrice),
+        updateSellUserTables(
+          sellUserId,
+          symbol,
+          buyOrderAmount,
+          sellOrderPrice
+        ),
+        updateBuyUserTables(
+          buyUserId,
+          symbol,
+          buyOrderAmount,
+          sellOrderPrice,
+          stockPrice
+        ),
         addExecutions(
           'buy',
           sellOrderPrice,
@@ -148,7 +185,19 @@ const processBuyOrder = async (
           sellOrderAmount
         ),
         updateMarketData(symbol, sellOrderPrice, date, sellOrderAmount),
-        updateUserTables(buyUserId, symbol, sellOrderAmount, sellOrderPrice),
+        updateSellUserTables(
+          sellUserId,
+          symbol,
+          sellOrderAmount,
+          sellOrderPrice
+        ),
+        updateBuyUserTables(
+          buyUserId,
+          symbol,
+          sellOrderAmount,
+          sellOrderPrice,
+          stockPrice
+        ),
         addExecutions(
           'buy',
           sellOrderPrice,
@@ -160,6 +209,7 @@ const processBuyOrder = async (
 
       broadcastUsers.push(sellUserId);
 
+      // eslint-disable-next-line no-param-reassign
       orderDetails = `b:${buyOrderAmount}:${buyOrderId}:${buyUserId}:${symbol}`;
     }
   } while (true);
