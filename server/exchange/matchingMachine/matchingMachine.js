@@ -1,7 +1,7 @@
 import { Kafka } from 'kafkajs';
 
 import socketIOClient from 'socket.io-client';
-import buyExecution from './executionBuy.js';
+import processBuyOrder from './executionBuy.js';
 import sellExecution from './executionSell.js';
 import cancelExecution from './executionCancel.js';
 
@@ -57,7 +57,7 @@ async function processOrder(
   }
 
   if (side === 'b') {
-    broadcastUsers = await buyExecution(
+    broadcastUsers = await processBuyOrder(
       stockPrice,
       stockPriceOrder,
       orderDetails,

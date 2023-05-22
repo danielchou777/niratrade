@@ -121,8 +121,8 @@ const CreateAccountBtn = styled.button`
 `;
 
 function Login() {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = React.useState('test123@gmail.com');
+  const [password, setPassword] = React.useState('12345678');
   const { setUser } = React.useContext(UserContext);
 
   const navigate = useNavigate();
@@ -187,11 +187,13 @@ function Login() {
         <SigninInput
           type='email'
           placeholder='Email*'
+          defaultValue={'test123@gmail.com'}
           onChange={handleEmailChange}
         />
         <SigninInput
           type='password'
           placeholder='Password*'
+          defaultValue={'12345678'}
           onChange={handlePasswordChange}
         />
 

@@ -5,47 +5,29 @@ import {
   updateUserBalance,
   insertExecution,
 } from '../../models/orderManagerModels.js';
-
 import {
   updateMarketData,
   addExecutions,
 } from '../../models/marketdataModels.js';
-
 import orderStatus from '../../constants/orderStatus.js';
-
 import { roundToMinute } from '../../utils/util.js';
 
-const updateUserTables = async (
-  buyUserId,
-  sellUserId,
-  symbol,
-  buyOrderAmount,
-  sellOrderPrice,
-  buyOrderPrice
-) => {
+const updateUserTables = async (userId, symbol, amount, price) => {
   await Promise.all([
-    updateUserBalance(sellUserId, sellOrderPrice * buyOrderAmount),
-    updateUserStock(sellUserId, symbol, -buyOrderAmount),
-    updateUserBalance(
-      buyUserId,
-      -sellOrderPrice * buyOrderAmount,
-      -buyOrderPrice * buyOrderAmount
-    ),
-    updateUserStock(buyUserId, symbol, buyOrderAmount),
+    updateUserBalance(userId, price * amount),
+    updateUserStock(userId, symbol, amount),
   ]);
 };
 
-const buyExecution = async (
+const processBuyOrder = async (
   stockPrice,
   stockPriceOrder,
   orderDetails,
   stockSymbol
-  // eslint-disable-next-line consistent-return
 ) => {
-  const isExecuted = false;
   const broadcastUsers = [];
 
-  while (!isExecuted) {
+  do {
     const date = roundToMinute(new Date());
 
     const sellOrder = await cache.zrangebyscore(
@@ -60,8 +42,7 @@ const buyExecution = async (
 
     const sellOrderPrice = Math.floor(sellOrder[1] / 1000000000000);
 
-    // if no buy order, add to sell order book and break
-    if (sellOrder.length === 0) {
+    if (sellOrder.length === 0 || sellOrderPrice > stockPrice) {
       await cache.zadd(`buyOrderBook-${stockSymbol}`, [
         stockPriceOrder,
         orderDetails,
@@ -69,30 +50,18 @@ const buyExecution = async (
       return broadcastUsers;
     }
 
-    // if buy order price is lower than sell order price, add to sell order book and break
-    if (sellOrderPrice > stockPrice) {
-      await cache.zadd(`buyOrderBook-${stockSymbol}`, [
-        stockPriceOrder,
-        orderDetails,
-      ]);
-      return broadcastUsers;
-    }
+    const sellOrderDetails = sellOrder[0].split(':');
+    const sellOrderAmount = Number(sellOrderDetails[1]);
+    const sellOrderId = sellOrderDetails[2];
+    const sellUserId = sellOrderDetails[3];
 
-    const sellOrderAmount = Number(sellOrder[0].split(':')[1]);
-    const sellOrderId = sellOrder[0].split(':')[2];
-    const sellUserId = sellOrder[0].split(':')[3];
+    const orderDetailsParts = orderDetails.split(':');
+    let buyOrderAmount = Number(orderDetailsParts[1]);
+    const buyOrderId = orderDetailsParts[2];
+    const buyUserId = orderDetailsParts[3];
+    const symbol = orderDetailsParts[4];
 
-    let buyOrderAmount = Number(orderDetails.split(':')[1]);
-    const buyOrderId = orderDetails.split(':')[2];
-    const buyUserId = orderDetails.split(':')[3];
-
-    const symbol = orderDetails.split(':')[4];
-
-    // if sell order amount is greater than buy order amount, update sell order book and break
     if (sellOrderAmount > buyOrderAmount) {
-      // update sell order status to partially filled
-      // update buy order status to filled
-
       await Promise.all([
         cache.zadd(`sellOrderBook-${stockSymbol}`, [
           sellOrder[1],
@@ -117,35 +86,22 @@ const buyExecution = async (
           buyOrderAmount
         ),
         updateMarketData(symbol, sellOrderPrice, date, buyOrderAmount),
+        updateUserTables(buyUserId, symbol, buyOrderAmount, sellOrderPrice),
+        addExecutions(
+          'buy',
+          sellOrderPrice,
+          buyOrderAmount,
+          Date.now(),
+          stockSymbol
+        ),
       ]);
-
-      await updateUserTables(
-        buyUserId,
-        sellUserId,
-        symbol,
-        buyOrderAmount,
-        sellOrderPrice,
-        stockPrice
-      );
-
-      addExecutions(
-        'buy',
-        sellOrderPrice,
-        buyOrderAmount,
-        Date.now(),
-        stockSymbol
-      );
 
       broadcastUsers.push(sellUserId);
 
       return broadcastUsers;
     }
 
-    // if sell order amount is equal to buy order amount, remove from sell order book and break
     if (sellOrderAmount === buyOrderAmount) {
-      // update sell order status to filled
-      // update buy order status to filled
-
       await Promise.all([
         cache.zrem(`sellOrderBook-${stockSymbol}`, sellOrder[0]),
         updateOrder(sellOrderId, orderStatus.filled, 0),
@@ -160,38 +116,23 @@ const buyExecution = async (
           buyOrderAmount
         ),
         updateMarketData(symbol, sellOrderPrice, date, buyOrderAmount),
+        updateUserTables(buyUserId, symbol, buyOrderAmount, sellOrderPrice),
+        addExecutions(
+          'buy',
+          sellOrderPrice,
+          buyOrderAmount,
+          Date.now(),
+          stockSymbol
+        ),
       ]);
-
-      await updateUserTables(
-        buyUserId,
-        sellUserId,
-        symbol,
-        buyOrderAmount,
-        sellOrderPrice,
-        stockPrice
-      );
-
-      addExecutions(
-        'buy',
-        sellOrderPrice,
-        buyOrderAmount,
-        Date.now(),
-        stockSymbol
-      );
 
       broadcastUsers.push(sellUserId);
 
       return broadcastUsers;
     }
 
-    // if sell order amount is less than buy order amount, remove from sell order book and continue
     if (sellOrderAmount < buyOrderAmount) {
-      // update buy order amount
       buyOrderAmount -= sellOrderAmount;
-
-      // update sell order status to filled
-
-      // update buy order status to partially filled
 
       await Promise.all([
         cache.zrem(`sellOrderBook-${stockSymbol}`, sellOrder[0]),
@@ -207,30 +148,21 @@ const buyExecution = async (
           sellOrderAmount
         ),
         updateMarketData(symbol, sellOrderPrice, date, sellOrderAmount),
+        updateUserTables(buyUserId, symbol, sellOrderAmount, sellOrderPrice),
+        addExecutions(
+          'buy',
+          sellOrderPrice,
+          sellOrderAmount,
+          Date.now(),
+          stockSymbol
+        ),
       ]);
-
-      await updateUserTables(
-        buyUserId,
-        sellUserId,
-        symbol,
-        sellOrderAmount,
-        sellOrderPrice,
-        stockPrice
-      );
-
-      addExecutions(
-        'buy',
-        sellOrderPrice,
-        sellOrderAmount,
-        Date.now(),
-        stockSymbol
-      );
 
       broadcastUsers.push(sellUserId);
 
       orderDetails = `b:${buyOrderAmount}:${buyOrderId}:${buyUserId}:${symbol}`;
     }
-  }
+  } while (true);
 };
 
-export default buyExecution;
+export default processBuyOrder;
