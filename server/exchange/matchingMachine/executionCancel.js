@@ -24,13 +24,15 @@ export default async function cancelExecution(orderDetails) {
   try {
     await beginMySQLTransaction(connection);
 
+    const redisTransaction = cache.multi();
+
     // if buy side, remove from buyOrders cache
     if (side === 'b') {
       const stockCacheInfo = `b:${unfilledQauntity}:${orderIdCancel}:${userId}:${symbol}`;
 
       // update order status to canceled, user balance
       await Promise.all([
-        cache.zrem(`buyOrderBook-${symbol}`, stockCacheInfo),
+        redisTransaction.zrem(`buyOrderBook-${symbol}`, stockCacheInfo),
         updateCancelOrder(orderIdCancel, orderStatus.canceled, connection),
         updateUserLockedBalance(userId, -price * unfilledQauntity, connection),
       ]);
@@ -42,16 +44,18 @@ export default async function cancelExecution(orderDetails) {
 
       // update order status to canceled, user balance
       await Promise.all([
-        cache.zrem(`sellOrderBook-${symbol}`, stockCacheInfo),
+        redisTransaction.zrem(`sellOrderBook-${symbol}`, stockCacheInfo),
         updateCancelOrder(orderIdCancel, orderStatus.canceled, connection),
         updateUserLockedStock(userId, symbol, -unfilledQauntity, connection),
       ]);
     }
 
+    await redisTransaction.exec();
+
     await commitMySQLTransaction(connection);
   } catch (err) {
     await rollbackMySQLTransaction(connection);
-    console.log(err);
+    console.error(err);
   } finally {
     connection.release();
   }
