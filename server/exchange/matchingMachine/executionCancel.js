@@ -23,7 +23,6 @@ export default async function cancelExecution(orderDetails) {
 
   try {
     await beginMySQLTransaction(connection);
-
     const redisTransaction = cache.multi();
 
     // if buy side, remove from buyOrders cache
@@ -51,7 +50,6 @@ export default async function cancelExecution(orderDetails) {
     }
 
     await redisTransaction.exec();
-
     await commitMySQLTransaction(connection);
   } catch (err) {
     await rollbackMySQLTransaction(connection);
@@ -60,6 +58,5 @@ export default async function cancelExecution(orderDetails) {
     connection.release();
   }
 
-  // broadcastUsers.push(userId);
   return [userId];
 }

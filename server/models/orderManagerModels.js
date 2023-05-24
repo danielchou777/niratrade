@@ -63,8 +63,14 @@ export const insertOrder = async (
   return rows;
 };
 
-export const updateOrder = async (orderId, status, unfilledQauntity) => {
-  const [rows] = await pool.query(
+export const updateOrder = async (
+  orderId,
+  status,
+  unfilledQauntity,
+  connection
+) => {
+  const conn = connection || pool;
+  const [rows] = await conn.query(
     'UPDATE orders SET status=?, unfilled_quantity=? WHERE order_id=?',
     [status, unfilledQauntity, orderId]
   );
@@ -97,14 +103,20 @@ export const updateUserStock = async (userId, symbol, quantity) => {
   }
 };
 
-export const updateUserBalance = async (userId, balance, locked_balance) => {
+export const updateUserBalance = async (
+  userId,
+  balance,
+  locked_balance,
+  connection
+) => {
+  const conn = connection || pool;
   if (balance < 0) {
-    await pool.query(
+    await conn.query(
       'UPDATE user SET balance = balance + ?, locked_balance = locked_balance + ? WHERE user_id=?',
       [balance, locked_balance, userId]
     );
   } else {
-    await pool.query('UPDATE user SET balance = balance + ? WHERE user_id=?', [
+    await conn.query('UPDATE user SET balance = balance + ? WHERE user_id=?', [
       balance,
       userId,
     ]);
@@ -118,11 +130,14 @@ export const insertExecution = async (
   sellUserId,
   symbol,
   price,
-  quantity
+  quantity,
+  connection
 ) => {
   const execNum = uuidv4();
 
-  const [rows] = await pool.query(
+  const conn = connection || pool;
+
+  const [rows] = await conn.query(
     'INSERT INTO execution (exec_num, buy_order_id, sell_order_id, buy_user_id, sell_user_id, symbol, price, quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [
       execNum,

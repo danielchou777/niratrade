@@ -22,6 +22,7 @@
         "indent": "off",
         "max-len": "off",
         "no-plusplus": "off",
+        "consistent-return": "off",
         // "no-param-reassign":"off",
         // "no-unused-vars": "off",
         "no-await-in-loop": "off"
