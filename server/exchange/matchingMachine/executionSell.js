@@ -29,10 +29,16 @@ const updateSellUserTables = async (
   ]);
 };
 
-const updateBuyUserTables = async (userId, symbol, amount, price) => {
+const updateBuyUserTables = async (
+  userId,
+  symbol,
+  amount,
+  price,
+  connection
+) => {
   await Promise.all([
-    updateUserBalance(userId, -price * amount, -price * amount),
-    updateUserStock(userId, symbol, amount),
+    updateUserBalance(userId, -price * amount, -price * amount, connection),
+    updateUserStock(userId, symbol, amount, connection),
   ]);
 };
 
@@ -139,7 +145,7 @@ const processSellOrder = async (
             sellOrderAmount,
             Date.now(),
             stockSymbol,
-            connection
+            redisTransaction
           ),
         ]);
 
@@ -192,7 +198,7 @@ const processSellOrder = async (
             sellOrderAmount,
             Date.now(),
             stockSymbol,
-            connection
+            redisTransaction
           ),
         ]);
 
@@ -252,7 +258,7 @@ const processSellOrder = async (
             buyOrderAmount,
             Date.now(),
             stockSymbol,
-            connection
+            redisTransaction
           ),
         ]);
 

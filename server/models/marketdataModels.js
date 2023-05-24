@@ -80,9 +80,12 @@ export const addExecutions = async (
   stockPrice,
   amount,
   time,
-  stockSymbol
+  stockSymbol,
+  redisTransaction
 ) => {
-  await cache.lpush(
+  const conn = redisTransaction || cache;
+
+  await conn.lpush(
     `executions-${stockSymbol}`,
     JSON.stringify({
       orderType,
@@ -92,7 +95,7 @@ export const addExecutions = async (
     })
   );
 
-  const executionsLenth = await cache.llen(`executions-${stockSymbol}`);
+  const executionsLenth = await conn.llen(`executions-${stockSymbol}`);
   if (executionsLenth > 30) {
     await cache.ltrim(`executions-${stockSymbol}`, 0, 29);
   }
