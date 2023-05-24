@@ -1,7 +1,7 @@
 import pool from '../utils/database.js';
 
 export const getBalance = async (userId) => {
-  const [rows] = await pool.execute(
+  const [rows] = await pool.query(
     'SELECT balance FROM user WHERE user_id = ?',
     [userId]
   );
@@ -10,7 +10,7 @@ export const getBalance = async (userId) => {
 };
 
 export const getStock = async (userId) => {
-  const [rows] = await pool.execute(
+  const [rows] = await pool.query(
     'SELECT symbol, quantity FROM user_stock WHERE user_id = ?',
     [userId]
   );
@@ -29,7 +29,7 @@ export const getPosition = async (userId, page) => {
 };
 
 export const getPositionPage = async (userId) => {
-  const [rows] = await pool.execute(
+  const [rows] = await pool.query(
     'SELECT COUNT(*) AS page FROM orders WHERE user_id = ? AND (status = "0" OR status = "1")',
     [userId]
   );
@@ -38,7 +38,7 @@ export const getPositionPage = async (userId) => {
 };
 
 export const getExecution = async (userId, symbol) => {
-  const [rows] = await pool.execute(
+  const [rows] = await pool.query(
     'SELECT buy_user_id, sell_user_id, symbol, price, quantity, created_at FROM execution WHERE (buy_user_id = ? OR sell_user_id = ?) AND symbol = ? ORDER BY created_at DESC LIMIT 30',
     [userId, userId, symbol]
   );

@@ -43,6 +43,8 @@ async function processOrder(
   const side = orderDetails.split(':')[0];
   let broadcastUsers = [];
 
+  console.debug(new Date(), 'received:', orderDetails, stockPriceOrder);
+
   if (side === 'c') {
     broadcastUsers = await cancelExecution(orderDetails);
   }

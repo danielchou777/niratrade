@@ -257,7 +257,7 @@ export const getStockPrices = async () => {
 };
 
 export const getUnfilledQuantity = async (orderId) => {
-  const [rows] = await pool.execute(
+  const [rows] = await pool.query(
     'SELECT unfilled_quantity FROM orders WHERE order_id=?',
     [orderId]
   );
