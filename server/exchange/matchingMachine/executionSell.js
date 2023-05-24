@@ -1,222 +1,281 @@
 import cache from '../../utils/cache.js';
+import pool from '../../utils/database.js';
 import {
   updateOrder,
   updateUserStock,
   updateUserBalance,
   insertExecution,
+  beginMySQLTransaction,
+  commitMySQLTransaction,
+  rollbackMySQLTransaction,
 } from '../../models/orderManagerModels.js';
-
 import {
   updateMarketData,
   addExecutions,
 } from '../../models/marketdataModels.js';
+import orderStatus from '../../constants/orderStatus.js';
 import { roundToMinute } from '../../utils/util.js';
 
-const updateUserTables = async (
-  buyUserId,
-  sellUserId,
+const updateSellUserTables = async (
+  userId,
   symbol,
-  sellOrderAmount,
-  buyOrderPrice
+  amount,
+  price,
+  connection
 ) => {
   await Promise.all([
-    updateUserBalance(sellUserId, buyOrderPrice * sellOrderAmount),
-    updateUserStock(sellUserId, symbol, -sellOrderAmount),
-    updateUserBalance(
-      buyUserId,
-      -buyOrderPrice * sellOrderAmount,
-      -buyOrderPrice * sellOrderAmount
-    ),
-    updateUserStock(buyUserId, symbol, sellOrderAmount),
+    updateUserBalance(userId, price * amount, price * amount, connection),
+    updateUserStock(userId, symbol, -amount, connection),
   ]);
 };
 
-const sellExecution = async (
+const updateBuyUserTables = async (
+  userId,
+  symbol,
+  amount,
+  price,
+  connection
+) => {
+  await Promise.all([
+    updateUserBalance(userId, -price * amount, -price * amount, connection),
+    updateUserStock(userId, symbol, amount, connection),
+  ]);
+};
+
+const processSellOrder = async (
   stockPrice,
   stockPriceOrder,
-  stockAmount,
+  orderDetails,
   stockSymbol
-  // eslint-disable-next-line consistent-return
 ) => {
-  const isExecuted = false;
   const broadcastUsers = [];
 
-  while (!isExecuted) {
-    const date = roundToMinute(new Date());
+  const connection = await pool.getConnection();
 
-    const buyOrder = await cache.zrevrangebyscore(
-      `buyOrderBook-${stockSymbol}`,
-      'inf',
-      0,
-      'WITHSCORES',
-      'LIMIT',
-      0,
-      1
-    );
+  try {
+    do {
+      await beginMySQLTransaction(connection);
+      const redisTransaction = cache.multi();
+      const date = roundToMinute(new Date());
 
-    const buyOrderPrice = Math.floor(buyOrder[1] / 1000000000000);
-
-    // if no buy order, add to sell order book and break
-    if (buyOrder.length === 0) {
-      await cache.zadd(`sellOrderBook-${stockSymbol}`, [
-        stockPriceOrder,
-        stockAmount,
-      ]);
-      return broadcastUsers;
-    }
-
-    // if buy order price is lower than sell order price, add to sell order book and break
-    if (buyOrderPrice < stockPrice) {
-      await cache.zadd(`sellOrderBook-${stockSymbol}`, [
-        stockPriceOrder,
-        stockAmount,
-      ]);
-      return broadcastUsers;
-    }
-
-    const buyOrderAmount = Number(buyOrder[0].split(':')[1]);
-    const buyOrderId = buyOrder[0].split(':')[2];
-    const buyUserId = buyOrder[0].split(':')[3];
-
-    let sellOrderAmount = Number(stockAmount.split(':')[1]);
-    const sellOrderId = stockAmount.split(':')[2];
-    const sellUserId = stockAmount.split(':')[3];
-
-    const symbol = stockAmount.split(':')[4];
-
-    // if buy order amount is greater than sell order amount, update buy order book and break
-    if (buyOrderAmount > sellOrderAmount) {
-      // update buy order status to partially filled
-      // update sell order status to filled
-
-      await Promise.all([
-        cache.zadd(`buyOrderBook-${stockSymbol}`, [
-          buyOrder[1],
-          `b:${
-            buyOrderAmount - sellOrderAmount
-          }:${buyOrderId}:${buyUserId}:${symbol}`,
-        ]),
-        cache.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
-        updateOrder(buyOrderId, '1', buyOrderAmount - sellOrderAmount),
-        updateOrder(sellOrderId, '2', 0),
-        insertExecution(
-          buyOrderId,
-          sellOrderId,
-          buyUserId,
-          sellUserId,
-          symbol,
-          buyOrderPrice,
-          sellOrderAmount
-        ),
-        updateMarketData(symbol, buyOrderPrice, date, sellOrderAmount),
-      ]);
-
-      await updateUserTables(
-        buyUserId,
-        sellUserId,
-        symbol,
-        sellOrderAmount,
-        buyOrderPrice
+      const buyOrder = await cache.zrevrangebyscore(
+        `buyOrderBook-${stockSymbol}`,
+        'inf',
+        0,
+        'WITHSCORES',
+        'LIMIT',
+        0,
+        1
       );
 
-      addExecutions(
-        'sell',
-        buyOrderPrice,
-        sellOrderAmount,
-        Date.now(),
-        stockSymbol
-      );
+      const buyOrderPrice = Math.floor(buyOrder[1] / 1000000000000);
 
-      broadcastUsers.push(buyUserId);
+      if (buyOrder.length === 0 || buyOrderPrice < stockPrice) {
+        redisTransaction.zadd(`sellOrderBook-${stockSymbol}`, [
+          stockPriceOrder,
+          orderDetails,
+        ]);
+        await redisTransaction.exec();
+        await commitMySQLTransaction(connection);
+        return broadcastUsers;
+      }
 
-      return broadcastUsers;
-    }
+      const buyOrderDetails = buyOrder[0].split(':');
+      const buyOrderAmount = Number(buyOrderDetails[1]);
+      const buyOrderId = buyOrderDetails[2];
+      const buyUserId = buyOrderDetails[3];
 
-    // if buy order amount is equal to sell order amount, remove from buy order book and break
-    if (buyOrderAmount === sellOrderAmount) {
-      // update buy order status to filled
-      // update sell order status to filledupdateOrder(sellOrderId, 'filled', 0);
-      await Promise.all([
-        cache.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
-        updateOrder(buyOrderId, '2', 0),
-        updateOrder(sellOrderId, '2', 0),
-        insertExecution(
-          buyOrderId,
-          sellOrderId,
-          buyUserId,
-          sellUserId,
-          symbol,
-          buyOrderPrice,
-          sellOrderAmount
-        ),
-        updateMarketData(symbol, buyOrderPrice, date, sellOrderAmount),
-      ]);
+      const orderDetailsParts = orderDetails.split(':');
+      let sellOrderAmount = Number(orderDetailsParts[1]);
+      const sellOrderId = orderDetailsParts[2];
+      const sellUserId = orderDetailsParts[3];
+      const symbol = orderDetailsParts[4];
 
-      await updateUserTables(
-        buyUserId,
-        sellUserId,
-        symbol,
-        sellOrderAmount,
-        buyOrderPrice
-      );
+      if (buyOrderAmount > sellOrderAmount) {
+        await Promise.all([
+          redisTransaction.zadd(`buyOrderBook-${stockSymbol}`, [
+            buyOrder[1],
+            `b:${
+              buyOrderAmount - sellOrderAmount
+            }:${buyOrderId}:${buyUserId}:${symbol}`,
+          ]),
+          redisTransaction.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
+          updateOrder(
+            buyOrderId,
+            orderStatus.partiallyFilled,
+            buyOrderAmount - sellOrderAmount,
+            connection
+          ),
+          updateOrder(sellOrderId, orderStatus.filled, 0, connection),
+          insertExecution(
+            buyOrderId,
+            sellOrderId,
+            buyUserId,
+            sellUserId,
+            symbol,
+            buyOrderPrice,
+            sellOrderAmount,
+            connection
+          ),
+          updateMarketData(
+            symbol,
+            buyOrderPrice,
+            date,
+            sellOrderAmount,
+            connection
+          ),
+          updateSellUserTables(
+            sellUserId,
+            symbol,
+            sellOrderAmount,
+            buyOrderPrice,
+            connection
+          ),
+          updateBuyUserTables(
+            buyUserId,
+            symbol,
+            sellOrderAmount,
+            buyOrderPrice,
+            buyOrderPrice,
+            connection
+          ),
+          addExecutions(
+            'sell',
+            buyOrderPrice,
+            sellOrderAmount,
+            Date.now(),
+            stockSymbol,
+            redisTransaction
+          ),
+        ]);
 
-      addExecutions(
-        'sell',
-        buyOrderPrice,
-        sellOrderAmount,
-        Date.now(),
-        stockSymbol
-      );
+        broadcastUsers.push(buyUserId);
+        await redisTransaction.exec();
+        await commitMySQLTransaction(connection);
+        return broadcastUsers;
+      }
 
-      broadcastUsers.push(buyUserId);
+      if (buyOrderAmount === sellOrderAmount) {
+        await Promise.all([
+          redisTransaction.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
+          updateOrder(buyOrderId, orderStatus.filled, 0, connection),
+          updateOrder(sellOrderId, orderStatus.filled, 0, connection),
+          insertExecution(
+            buyOrderId,
+            sellOrderId,
+            buyUserId,
+            sellUserId,
+            symbol,
+            buyOrderPrice,
+            sellOrderAmount,
+            connection
+          ),
+          updateMarketData(
+            symbol,
+            buyOrderPrice,
+            date,
+            sellOrderAmount,
+            connection
+          ),
+          updateSellUserTables(
+            sellUserId,
+            symbol,
+            sellOrderAmount,
+            buyOrderPrice,
+            connection
+          ),
+          updateBuyUserTables(
+            buyUserId,
+            symbol,
+            sellOrderAmount,
+            buyOrderPrice,
+            buyOrderPrice,
+            connection
+          ),
+          addExecutions(
+            'sell',
+            buyOrderPrice,
+            sellOrderAmount,
+            Date.now(),
+            stockSymbol,
+            redisTransaction
+          ),
+        ]);
 
-      return broadcastUsers;
-    }
+        broadcastUsers.push(buyUserId);
+        await redisTransaction.exec();
+        await commitMySQLTransaction(connection);
+        return broadcastUsers;
+      }
 
-    // if buy order amount is less than sell order amount, remove from buy order book and continue
-    if (buyOrderAmount < sellOrderAmount) {
-      // update sell order amount
-      sellOrderAmount -= buyOrderAmount;
+      if (buyOrderAmount < sellOrderAmount) {
+        sellOrderAmount -= buyOrderAmount;
 
-      // update buy order status to filled
-      // update sell order status to partially filled
-      await Promise.all([
-        cache.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
-        updateOrder(buyOrderId, '2', 0),
-        updateOrder(sellOrderId, '1', sellOrderAmount),
-        insertExecution(
-          buyOrderId,
-          sellOrderId,
-          buyUserId,
-          sellUserId,
-          symbol,
-          buyOrderPrice,
-          buyOrderAmount
-        ),
-        updateMarketData(symbol, buyOrderPrice, date, buyOrderAmount),
-      ]);
+        await Promise.all([
+          redisTransaction.zrem(`buyOrderBook-${stockSymbol}`, buyOrder[0]),
+          updateOrder(buyOrderId, orderStatus.filled, 0),
+          updateOrder(
+            sellOrderId,
+            orderStatus.partiallyFilled,
+            sellOrderAmount,
+            connection
+          ),
+          insertExecution(
+            buyOrderId,
+            sellOrderId,
+            buyUserId,
+            sellUserId,
+            symbol,
+            buyOrderPrice,
+            buyOrderAmount,
+            connection
+          ),
+          updateMarketData(
+            symbol,
+            buyOrderPrice,
+            date,
+            buyOrderAmount,
+            connection
+          ),
+          updateSellUserTables(
+            sellUserId,
+            symbol,
+            buyOrderAmount,
+            buyOrderPrice,
+            connection
+          ),
+          updateBuyUserTables(
+            buyUserId,
+            symbol,
+            buyOrderAmount,
+            buyOrderPrice,
+            buyOrderPrice,
+            connection
+          ),
+          addExecutions(
+            'sell',
+            buyOrderPrice,
+            buyOrderAmount,
+            Date.now(),
+            stockSymbol,
+            redisTransaction
+          ),
+        ]);
 
-      await updateUserTables(
-        buyUserId,
-        sellUserId,
-        symbol,
-        buyOrderAmount,
-        buyOrderPrice
-      );
+        broadcastUsers.push(buyUserId);
 
-      addExecutions(
-        'sell',
-        buyOrderPrice,
-        buyOrderAmount,
-        Date.now(),
-        stockSymbol
-      );
-
-      broadcastUsers.push(buyUserId);
-
-      stockAmount = `s:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
-    }
+        // eslint-disable-next-line no-param-reassign
+        orderDetails = `s:${sellOrderAmount}:${sellOrderId}:${sellUserId}:${symbol}`;
+      }
+      await redisTransaction.exec();
+      await commitMySQLTransaction(connection);
+    } while (true);
+  } catch (err) {
+    await rollbackMySQLTransaction(connection);
+    console.error(err);
+  } finally {
+    connection.release();
   }
 };
 
-export default sellExecution;
+export default processSellOrder;

@@ -80,9 +80,12 @@ export const addExecutions = async (
   stockPrice,
   amount,
   time,
-  stockSymbol
+  stockSymbol,
+  redisTransaction
 ) => {
-  await cache.lpush(
+  const conn = redisTransaction || cache;
+
+  await conn.lpush(
     `executions-${stockSymbol}`,
     JSON.stringify({
       orderType,
@@ -92,7 +95,7 @@ export const addExecutions = async (
     })
   );
 
-  const executionsLenth = await cache.llen(`executions-${stockSymbol}`);
+  const executionsLenth = await conn.llen(`executions-${stockSymbol}`);
   if (executionsLenth > 30) {
     await cache.ltrim(`executions-${stockSymbol}`, 0, 29);
   }
@@ -164,16 +167,23 @@ export const updateMarketDataEveryMinute = async (
   }
 };
 
-export const updateMarketData = async (symbol, currentPrice, time, volume) => {
-  // time: unix time to the milisecond
+export const updateMarketData = async (
+  symbol,
+  currentPrice,
+  time,
+  volume,
+  connection
+) => {
+  const conn = connection || pool;
 
-  const [rows] = await pool.query(
+  // time: unix time to the milisecond
+  const [rows] = await conn.query(
     'SELECT high, low, close FROM market_data WHERE symbol = ? AND unix_timestamp = ? ORDER BY unix_timestamp',
     [symbol, time]
   );
 
   if (!rows[0]) {
-    await pool.query(
+    await conn.query(
       'INSERT INTO market_data (symbol, unix_timestamp, open, high, low, close, volume ) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [symbol, time, 0, currentPrice, currentPrice, currentPrice, volume]
     );
@@ -183,7 +193,7 @@ export const updateMarketData = async (symbol, currentPrice, time, volume) => {
   // if the close price is null, then it means that the row has not been updated yet
   // so update the low, high, close price of the current minute
   if (rows[0].close === null) {
-    await pool.query(
+    await conn.query(
       'UPDATE market_data SET high = ?, low = ?, close = ?, volume = volume + ? WHERE symbol = ? AND unix_timestamp = ?',
       [currentPrice, currentPrice, currentPrice, volume, symbol, time]
     );
@@ -194,7 +204,7 @@ export const updateMarketData = async (symbol, currentPrice, time, volume) => {
 
   const lowPrice = rows[0].low < currentPrice ? rows[0].low : currentPrice;
 
-  await pool.query(
+  await conn.query(
     'UPDATE market_data SET high = ?, low = ?, close = ?, volume = volume + ? WHERE symbol = ? AND unix_timestamp = ?',
     [highPrice, lowPrice, currentPrice, volume, symbol, time]
   );
@@ -257,7 +267,7 @@ export const getStockPrices = async () => {
 };
 
 export const getUnfilledQuantity = async (orderId) => {
-  const [rows] = await pool.execute(
+  const [rows] = await pool.query(
     'SELECT unfilled_quantity FROM orders WHERE order_id=?',
     [orderId]
   );
