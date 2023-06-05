@@ -11,7 +11,7 @@ let io;
 export const createSocketServer = (server) => {
   io = new Server(server, {
     cors: {
-      origin: '*',
+      origin: process.env.CORS_ORIGIN,
     },
   });
   io.on('connection', (socket) => {
