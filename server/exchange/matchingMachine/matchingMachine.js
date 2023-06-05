@@ -7,7 +7,7 @@ import cancelExecution from './executionCancel.js';
 
 async function setupKafka(symbol) {
   const clientId = symbol;
-  const brokers = ['localhost:9092'];
+  const brokers = [process.env.KAFKA_BROKER];
   const kafka = new Kafka({ clientId, brokers });
   const consumer = kafka.consumer({
     groupId: clientId,
@@ -21,10 +21,7 @@ async function setupKafka(symbol) {
 }
 
 async function setupSocketIO() {
-  const ENDPOINT =
-    process.env.CACHE_ENV === 'production'
-      ? 'http://172.31.14.46:3000'
-      : 'http://localhost:3000';
+  const ENDPOINT = process.env.SOCKETIO_CLIENT_ENDPOINT;
 
   const socketio = socketIOClient(ENDPOINT);
 

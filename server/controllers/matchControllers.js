@@ -40,7 +40,7 @@ export const order = (req, res) => {
     throw new Error.BadRequestError('invalid status');
   }
 
-  const client = net.connect({ port: 8124 }, () => {});
+  const client = net.connect({ port: process.env.TCP_PORT }, () => {});
 
   client.on('connect', () => {});
 
