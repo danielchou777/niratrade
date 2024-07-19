@@ -4,19 +4,11 @@ An interactive stock exchange platform empowers users to execute trades rapidly,
 
 ## Table of Contents
 
-- [Demo Account](#Demo-Account)
 - [Features](#Features)
 - [Architecture](#Architecture)
 - [Database Schema](#Database-Schema)
 - [Technologies](#Technologies)
 - [Contact](#Contact)
-
-## Demo Account
-Website URL: https://www.niratrade.online/
-
-Demo Account
-- Account: test123@gmail.com
-- Password: 12345678
 
 ## ![Preview](./client/src/images/readme/preview.png)
 
